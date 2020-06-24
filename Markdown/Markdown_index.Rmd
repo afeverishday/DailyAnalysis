@@ -78,6 +78,11 @@ dim(iris)
 
 전체 옵션은 knitr::opts_chunk$get 함수로 확인할 수 있다.
 
+
+### table
+
+1. 직접 입력하기
+
 선택옵션 | 기본설정 | 효과
 ------------- | ------------- | --------------------------------------- 
 eval | TRUE| 코드를 평가하고 실행결과를 포함한다.
@@ -92,9 +97,18 @@ comment | "##" |주석문자로 출력결과에 서두를 붙인다.
 fig.width | 7 | 덩어리로 생성되는 그래프에 대한 폭을 인치로 지정한다.
 fig.height | 7 | 덩어리로 생성되는 그래프에 대한 높이을 인치로 지정한다.
 
+2. kable을 활용하기
+```{r}
+kable(iris[1:5, ], caption = "A caption")
+```
 
 ## Plots 내장하기
 
 ```{r pressure, echo=FALSE}
 plot(pressure)
+```
+
+```{r, fig.cap = "tidyverse logo", fig.align = "center"}
+library(knitr)
+include_graphics("https://www.tidyverse.org/images/tidyverse-default.png")
 ```
