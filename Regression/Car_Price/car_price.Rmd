@@ -1,0 +1,216 @@
+---
+title: "Car Price"
+output: github_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduce
+
+Car Price 예제를 R을 활용하여 분석한다.
+
+# EDA (Exploratory Data Analysis) 탐색적 데이터 분석
+
+ 데이터를 다양한 각도에서 살펴보고 이해하는 과정으로 실제적으로 데이터 분석을 하기에 앞서 대표값, 그래프, 통계적 검정 등을 통해 자료를 직관적으로 살펴보는 과정이다. 데이터가 가진 특성과 문제점을 먼저 살펴보고 방법론 등을 선택할 수 있으며, 향후 데이터를 분석하는 중에 발생하는 문제를 사전에 방지하는 효과를 볼수 있다. 실제로 데이터는 결측치, 이상치 등의 문제를 가질수 있으며 이러한 문제를 포함하는 데이터는 분석 모델의 신뢰도와 정확도를 감소시킨다. 또한, EDA 과정이 수반되지 않은 상태에서 분석(예측) 모델을 생성하면 예측 모델의 성능이 낮을 가능성이 있으며, 데이터를 단편적으로 바라보고 구성함에 따라 중요한 패턴을 누락한 상태에서 모델을 생성하는 우를 범할 수 있다. 
+
+ EDA는 기본적으로 문제 정의 단계에서 세웠던 연구 가설을 바탕으로 진행된다. EDA 시 가장 먼저 확인할 사항은 데이터의 dimension과 각 변수의 속성을 이해하는 것이다. 이를 위해 제공된 데이터 description에 나와 있는 설명과 실제 데이터가 부합하는지를 체크해야 한다. 다음으로 각 변수의 속성에 따라서 대표값과 범주 등을 살펴보고, 누락되거나 잘못 입력된 값이 있는지 확인한다. 결측값의 경우 해당 결측값의 개수와 결측이 일어난 이유, 결측값의 패턴이 무작위적인지 인위적으로 누락된 것인지에 따라서 대체와 삭제를 고려한다.
+또한 이상치의 경우 입력 오류 때문인지, 매우 드믈게 발생하는 이상치 인지 등에 따라 구별하여 대체 혹은 삭제한다. 보통 대체의 방법은 대표값으로 채우거나 다른 변수를 통해 유추하는 방식을 택하게 된다. (이에 대한 구체적인 사항은 다음에 추가적으로 작성할 예정이다.) 물론 이 과정에서 데이터의 특성을 바라보기 위한 과정이  단순히 데이터의 평균, 분산, 범위, 범주, 빈도 등과 같은 대표값만으로 확인된다면 이는 다분히 단편적 정보로 데이터를 평가하는 것이기 때문에 각 변수의 분포를 살펴 보는 이외에도 그래프를 통한 시각화와 가설 검정을 통한 변수의 유의성 체크 등도 같이 사용된다. EDA는 실제 데이터에 따라서 그 방법이 매우 다양하고, 모든 데이터 마다 다른 방법을 사용해야 하는 경우가 많아 여기서 부터는 데이터를 살펴 보며 그때 그때 왜 이러한 EDA를 진행했는지 설명하도록 한다.
+
+
+* 먼저 필요한 라이브러리를 불러온다. 
+ 보통 라이브러리는 한번에 불러오거나 그때그때 추가를 하게 되는데, 기본적으로 항상 사용되거나 당장 필요한 library를 가져오며,
+ 여기서는 아래 세가지 라이브러리를 먼저 불러오고 그때그때 사용할 함수의 라이브러리를 불러온 뒤 정리하여 적어놓겠다.
+ ( 분석을 할때 보통 모든 라이브러리를 먼저 불러와서 진행하지는 않는다. 내가 어떤 라이브러리를 사용하게 될지는 데이터를 살펴 본 이후에 알게 되는 경우도 많다.)
+ 
+ 
+```{r load_libraries, echo=FALSE, message=FALSE}
+
+library(data.table)
+library(dplyr)
+library(ggplot2)
+
+```
+
+* 다음으로 데이터를 불러오고 해당 데이터를 살펴 본다.
+
+
+```{r}
+car_price <-fread('C:/Users/afeve/Documents/Tutorials/Regression/Car_Price/carprice_total.csv', encoding = 'UTF-8')
+
+```
+
+```{r}
+dim(car_price)
+
+```
+
+```{r}
+head(car_price)
+
+```
+
+```{r}
+str(car_price)
+
+```
+
+```{r}
+glimpse(car_price)
+
+```
+
+
+```{r}
+colSums(is.na(car_price))
+
+```
+
+```{r}
+num_var<- which(sapply(car_price,is.numeric)) %>% names()
+num_var
+
+```
+
+```{r}
+char_var<-which(sapply(car_price,is.character)) %>% names()
+char_var
+
+```
+
+
+```{r}
+summary(car_price)
+
+```
+
+```{r}
+table(car_price$종류)
+
+```
+
+```{r}
+table(car_price$연료)
+
+```
+
+```{r}
+table(car_price$변속기)
+
+```
+
+```{r}
+table(car_price$종류, car_price$연료)
+
+```
+
+```{r}
+
+table(car_price$종류, car_price$연료)
+
+```
+
+```{r}
+
+table(car_price$종류, car_price$변속기)
+
+```
+
+
+```{r}
+
+table( car_price$연료, car_price$변속기)
+
+```
+
+```{r}
+
+table(car_price$종류, car_price$연료, car_price$변속기)
+
+```
+
+
+
+
+---
+### 단축키
+
+가) chunk생성: Ctrl + Alt + I
+
+나) knit하기: Ctrl + Shift + k 
+
+다) 한줄 실행: Ctrl + Enter, chunk실행: Ctrl + Shift + Enter
+
+
+### 텍스트 작성방법
+
+가) #: #을 앞에 붙이면 굵은 문자 스타일로 Viewer창에 출력된다. 많이 붙일수록 더 굵은 문자로 표기된다.
+
+나) ---: -기호를 세 번 입력하면 줄이 표시된다.
+
+다) *: 글머리 기호가 된다.
+
+### 표 작성 방법
+
+이름 | 컬럼
+-----|-----
+K |   JH
+K |   EY
+
+
+
+## 코드내장하기
+
+가) r 코드를 백틱(`)으로 감싼다. R이 인라인 코드를 실행된 결과로 대체한다
+
+2 더하기 2는 `r 2 +2`와 같다
+
+
+나) R코드 덩어리를 ```{r} 으로 시작하고. ``` 으로 마무리한다
+
+```{r}
+dim(iris)
+```
+
+## 화면 출력 선택 옵션
+
+knitr 선택옵션을 사용해서 코드 덩어리 출력 스타일을 적용한다. 코드 상단 괄호 내부에 선택옵션을 지정한다
+Here’s some code
+
+가) 코드를 보여줌
+```{r eval=FALSE}
+dim(iris)
+  
+```
+
+
+나) 결과를 보여줌
+
+```{r echo=FALSE}
+dim(iris)
+  
+```
+
+선택옵션 | 기본설정 | 효과
+------------- | ------------- | --------------------------------------- 
+eval | TRUE| 코드를 평가하고 실행결과를 포함한다.
+echo | TRUE| 실행결과와 함께 코드를 출력한다.
+warning | TRUE| 경고메시지를 출력한다.
+error | FALSE| 오류메시지를 출력한다.
+message | TRUE| 메시지를 출력한다.
+tidy | FALSE| 깔끔한 방식으로 코드 형태를 변형한다.
+results | "markup" "markup", "asis", “hold", "hide"
+cache | FALSE |결과값을 캐쉬해서 향후 실행시 건너뛰게 설정한다.
+comment | "##" |주석문자로 출력결과에 서두를 붙인다.
+fig.width | 7 | 덩어리로 생성되는 그래프에 대한 폭을 인치로 지정한다.
+fig.height | 7 | 덩어리로 생성되는 그래프에 대한 높이을 인치로 지정한다.
+
+
+## Plots 내장하기
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
