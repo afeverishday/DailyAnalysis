@@ -3,79 +3,23 @@ Data Analysis Tutorial
 
 ## Introduce
 
-This is an R Markdown format used for publishing markdown documents to
-GitHub.
+\*R 을 활용한 데이터 분석 예제 와 실습 데이터
 
-이 문서는 markdown 문서를 github로 publishing 하기위해서 사용되는 R markdown 형식이다.
+### 0\. statistical hypothesis test
 
------
+  - 평균, 분산, 모비율 등 구체적인 건 정리하면서..
 
-### 단축키
+### 1\. Regression Problems
 
-가) chunk생성: Ctrl + Alt + I
+  - 주택 가격 예측
 
-나) knit하기: Ctrl + Shift + k
+  - 
+### 2\. Classification Problems
 
-다) 한줄 실행: Ctrl + Enter, chunk실행: Ctrl + Shift + Enter
+  - 타이타닉 생존자
 
-### 텍스트 작성방법
+  - 
+### 3\. Timeseries Problems
 
-가) \#: \#을 앞에 붙이면 굵은 문자 스타일로 Viewer창에 출력된다. 많이 붙일수록 더 굵은 문자로 표기된다.
-
-나) —: -기호를 세 번 입력하면 줄이 표시된다.
-
-다) \*: 글머리 기호가 된다.
-
-### 표 작성 방법
-
-| 이름 | 컬럼 |
-| -- | -- |
-| K  | JH |
-| K  | EY |
-
-## 코드내장하기
-
-가) r 코드를 백틱(\`)으로 감싼다. R이 인라인 코드를 실행된 결과로 대체한다
-
-2 더하기 2는 4와 같다
-
-나) R코드 덩어리를 `{r} 으로 시작하고.` 으로 마무리한다
-
-``` r
-dim(iris)
-```
-
-    ## [1] 150   5
-
-## 화면 출력 선택 옵션
-
-knitr 선택옵션을 사용해서 코드 덩어리 출력 스타일을 적용한다. 코드 상단 괄호 내부에 선택옵션을 지정한다 Here’s
-some code
-
-가) 코드를 보여줌
-
-``` r
-dim(iris)
-```
-
-나) 결과를 보여줌
-
-    ## [1] 150   5
-
-| 선택옵션       | 기본설정                                      | 효과                              |
-| ---------- | ----------------------------------------- | ------------------------------- |
-| eval       | TRUE                                      | 코드를 평가하고 실행결과를 포함한다.            |
-| echo       | TRUE                                      | 실행결과와 함께 코드를 출력한다.              |
-| warning    | TRUE                                      | 경고메시지를 출력한다.                    |
-| error      | FALSE                                     | 오류메시지를 출력한다.                    |
-| message    | TRUE                                      | 메시지를 출력한다.                      |
-| tidy       | FALSE                                     | 깔끔한 방식으로 코드 형태를 변형한다.           |
-| results    | “markup” “markup”, “asis”, “hold”, “hide” |                                 |
-| cache      | FALSE                                     | 결과값을 캐쉬해서 향후 실행시 건너뛰게 설정한다.     |
-| comment    | “\#\#”                                    | 주석문자로 출력결과에 서두를 붙인다.            |
-| fig.width  | 7                                         | 덩어리로 생성되는 그래프에 대한 폭을 인치로 지정한다.  |
-| fig.height | 7                                         | 덩어리로 생성되는 그래프에 대한 높이을 인치로 지정한다. |
-
-## Plots 내장하기
-
-![](index_files/figure-gfm/pressure-1.png)<!-- -->
+  - 온도
+  - 에너지 수요

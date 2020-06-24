@@ -2,7 +2,7 @@
 title: "Data Analysis Tutorial"
 output: github_document
 editor_options: 
-
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
