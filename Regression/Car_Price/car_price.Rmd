@@ -1,17 +1,20 @@
 ---
-title: "Car Price"
+title: "Regression1.Car Price"
 output: github_document
+author: "JayHKim"
+date: "`r format(Sys.Date())`"
 editor_options: 
   chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo=F, fig.align = "center", message=F, warning=F, fig.height = 8, cache=T, dpi = 300, dev = "jpeg")
 ```
 
 # Introduce
 
 Car Price 예제를 R을 활용하여 분석한다.
+
 
 # EDA (Exploratory Data Analysis) 탐색적 데이터 분석
 
@@ -27,7 +30,7 @@ Car Price 예제를 R을 활용하여 분석한다.
  ( 분석을 할때 보통 모든 라이브러리를 먼저 불러와서 진행하지는 않는다. 내가 어떤 라이브러리를 사용하게 될지는 데이터를 살펴 본 이후에 알게 되는 경우도 많다.)
  
  
-```{r load_libraries, echo=FALSE, message=FALSE}
+```{r warning=FALSE}
 
 library(data.table)
 library(dplyr)

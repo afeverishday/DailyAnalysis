@@ -1,5 +1,7 @@
-Car Price
+Regression1.Car Price
 ================
+JayHKim
+2020-06-24
 
 # Introduce
 
@@ -31,29 +33,11 @@ dimension과 각 변수의 속성을 이해하는 것이다. 이를 위해 제�
     사용할 함수의 라이브러리를 불러온 뒤 정리하여 적어놓겠다. ( 분석을 할때 보통 모든 라이브러리를 먼저 불러와서
     진행하지는 않는다. 내가 어떤 라이브러리를 사용하게 될지는 데이터를 살펴 본 이후에 알게 되는 경우도 많다.)
 
-<!-- end list -->
-
-    ## Warning: package 'data.table' was built under R version 3.5.3
-
-    ## Warning: package 'dplyr' was built under R version 3.5.3
-
   - 다음으로 데이터를 불러오고 해당 데이터를 살펴 본다.
 
 <!-- end list -->
 
-``` r
-car_price <-fread('C:/Users/afeve/Documents/Tutorials/Regression/Car_Price/carprice_total.csv', encoding = 'UTF-8')
-```
-
-``` r
-dim(car_price)
-```
-
     ## [1] 102  11
-
-``` r
-head(car_price)
-```
 
     ##    가격 년식   종류 연비 마력 토크   연료 하이브리드 배기량 중량 변속기
     ## 1: 1885 2015 준중형 11.8  172 21.0 가솔린          0   1999 1300   자동
@@ -62,10 +46,6 @@ head(car_price)
     ## 4: 1645 2014   소형 14.0  140 17.0 가솔린          0   1591 1090   자동
     ## 5: 1960 2015   대형  9.6  175 46.0   디젤          0   2497 1990   자동
     ## 6: 3277 2015   중형 12.4  200 44.5   디젤          0   2199 1864   자동
-
-``` r
-str(car_price)
-```
 
     ## Classes 'data.table' and 'data.frame':   102 obs. of  11 variables:
     ##  $ 가격      : int  1885 2190 1135 1645 1960 3277 3065 1459 2695 1492 ...
@@ -81,10 +61,6 @@ str(car_price)
     ##  $ 변속기    : chr  "자동" "자동" "수동" "자동" ...
     ##  - attr(*, ".internal.selfref")=<externalptr>
 
-``` r
-glimpse(car_price)
-```
-
     ## Rows: 102
     ## Columns: 11
     ## $ 가격       <int> 1885, 2190, 1135, 1645, 1960, 3277, 3065, 1459, 2695, 1492...
@@ -99,33 +75,15 @@ glimpse(car_price)
     ## $ 중량       <int> 1300, 1300, 1035, 1090, 1990, 1864, 1799, 1095, 1570, 1103...
     ## $ 변속기     <chr> "자동", "자동", "수동", "자동", "자동", "자동", "자동", "자동", "자동", "자동",...
 
-``` r
-colSums(is.na(car_price))
-```
-
     ##       가격       년식       종류       연비       마력       토크       연료 
     ##          0          0          0          0          0          0          0 
     ## 하이브리드     배기량       중량     변속기 
     ##          0          0          0          0
 
-``` r
-num_var<- which(sapply(car_price,is.numeric)) %>% names()
-num_var
-```
-
     ## [1] "가격"       "년식"       "연비"       "마력"       "토크"      
     ## [6] "하이브리드" "배기량"     "중량"
 
-``` r
-char_var<-which(sapply(car_price,is.character)) %>% names()
-char_var
-```
-
     ## [1] "종류"   "연료"   "변속기"
-
-``` r
-summary(car_price)
-```
 
     ##       가격            년식          종류                연비      
     ##  Min.   :  870   Min.   :2010   Length:102         Min.   : 6.30  
@@ -149,34 +107,18 @@ summary(car_price)
     ##  3rd Qu.:2462   3rd Qu.:1904                     
     ##  Max.   :5038   Max.   :2383
 
-``` r
-table(car_price$종류)
-```
-
     ## 
     ##   대형   소형 준중형   중형 
     ##     35     24     25     18
-
-``` r
-table(car_price$연료)
-```
 
     ## 
     ##    LPG 가솔린   디젤 
     ##      7     52     43
 
-``` r
-table(car_price$변속기)
-```
-
     ## 
     ## 수동 자동 
     ##   32   70
 
-``` r
-table(car_price$종류, car_price$연료)
-```
-
     ##         
     ##          LPG 가솔린 디젤
     ##   대형     6     12   17
@@ -184,20 +126,12 @@ table(car_price$종류, car_price$연료)
     ##   준중형   1     12   12
     ##   중형     0      8   10
 
-``` r
-table(car_price$종류, car_price$연료)
-```
-
     ##         
     ##          LPG 가솔린 디젤
     ##   대형     6     12   17
     ##   소형     0     20    4
     ##   준중형   1     12   12
     ##   중형     0      8   10
-
-``` r
-table(car_price$종류, car_price$변속기)
-```
 
     ##         
     ##          수동 자동
@@ -206,19 +140,11 @@ table(car_price$종류, car_price$변속기)
     ##   준중형   10   15
     ##   중형      2   16
 
-``` r
-table( car_price$연료, car_price$변속기)
-```
-
     ##         
     ##          수동 자동
     ##   LPG       3    4
     ##   가솔린   12   40
     ##   디젤     17   26
-
-``` r
-table(car_price$종류, car_price$연료, car_price$변속기)
-```
 
     ## , ,  = 수동
     ## 
@@ -271,10 +197,6 @@ table(car_price$종류, car_price$연료, car_price$변속기)
 
 나) R코드 덩어리를 `{r} 으로 시작하고.` 으로 마무리한다
 
-``` r
-dim(iris)
-```
-
     ## [1] 150   5
 
 ## 화면 출력 선택 옵션
@@ -283,10 +205,6 @@ knitr 선택옵션을 사용해서 코드 덩어리 출력 스타일을 적용�
 some code
 
 가) 코드를 보여줌
-
-``` r
-dim(iris)
-```
 
 나) 결과를 보여줌
 
@@ -308,4 +226,4 @@ dim(iris)
 
 ## Plots 내장하기
 
-![](car_price_files/figure-gfm/pressure-1.png)<!-- -->
+<img src="car_price_files/figure-gfm/pressure-1.jpeg" style="display: block; margin: auto;" />

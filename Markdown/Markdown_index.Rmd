@@ -6,7 +6,8 @@ editor_options:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo=F, fig.align = "center", message=F, warning=F, fig.height = 8, cache=T, dpi = 300, dev = "jpeg")
+```
 ```
 
 ## Introduce
@@ -74,6 +75,8 @@ dim(iris)
 dim(iris)
   
 ```
+
+전체 옵션은 knitr::opts_chunk$get 함수로 확인할 수 있다.
 
 선택옵션 | 기본설정 | 효과
 ------------- | ------------- | --------------------------------------- 
