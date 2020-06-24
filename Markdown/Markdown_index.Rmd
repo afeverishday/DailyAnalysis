@@ -1,0 +1,97 @@
+---
+title: "Data Analysis Tutorial"
+output: github_document
+editor_options: 
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduce
+
+This is an R Markdown format used for publishing markdown documents to GitHub. 
+
+이 문서는 markdown 문서를 github로 publishing 하기위해서 사용되는 R markdown 형식이다.
+
+---
+
+### 단축키
+
+가) chunk생성: Ctrl + Alt + I
+
+나) knit하기: Ctrl + Shift + k 
+
+다) 한줄 실행: Ctrl + Enter, chunk실행: Ctrl + Shift + Enter
+
+
+### 텍스트 작성방법
+
+가) #: #을 앞에 붙이면 굵은 문자 스타일로 Viewer창에 출력된다. 많이 붙일수록 더 굵은 문자로 표기된다.
+
+나) ---: -기호를 세 번 입력하면 줄이 표시된다.
+
+다) *: 글머리 기호가 된다.
+
+### 표 작성 방법
+
+이름 | 컬럼
+-----|-----
+K |   JH
+K |   EY
+
+
+
+## 코드내장하기
+
+가) r 코드를 백틱(`)으로 감싼다. R이 인라인 코드를 실행된 결과로 대체한다
+
+2 더하기 2는 `r 2 +2`와 같다
+
+
+나) R코드 덩어리를 ```{r} 으로 시작하고. ``` 으로 마무리한다
+
+```{r}
+dim(iris)
+```
+
+## 화면 출력 선택 옵션
+
+knitr 선택옵션을 사용해서 코드 덩어리 출력 스타일을 적용한다. 코드 상단 괄호 내부에 선택옵션을 지정한다
+Here’s some code
+
+가) 코드를 보여줌
+```{r eval=FALSE}
+dim(iris)
+  
+```
+
+
+나) 결과를 보여줌
+
+```{r echo=FALSE}
+dim(iris)
+  
+```
+
+선택옵션 | 기본설정 | 효과
+------------- | ------------- | --------------------------------------- 
+eval | TRUE| 코드를 평가하고 실행결과를 포함한다.
+echo | TRUE| 실행결과와 함께 코드를 출력한다.
+warning | TRUE| 경고메시지를 출력한다.
+error | FALSE| 오류메시지를 출력한다.
+message | TRUE| 메시지를 출력한다.
+tidy | FALSE| 깔끔한 방식으로 코드 형태를 변형한다.
+results | "markup" "markup", "asis", “hold", "hide"
+cache | FALSE |결과값을 캐쉬해서 향후 실행시 건너뛰게 설정한다.
+comment | "##" |주석문자로 출력결과에 서두를 붙인다.
+fig.width | 7 | 덩어리로 생성되는 그래프에 대한 폭을 인치로 지정한다.
+fig.height | 7 | 덩어리로 생성되는 그래프에 대한 높이을 인치로 지정한다.
+
+
+## Plots 내장하기
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
