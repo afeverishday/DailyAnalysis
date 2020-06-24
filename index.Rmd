@@ -11,8 +11,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Introduce
 
-*R 을 활용한 데이터 분석 예제 와 실습 데이터
+* R 을 활용한 데이터 분석 예제 와 실습 데이터
 
+---
 
 ### 0. statistical hypothesis test 
 - 평균, 분산, 모비율 등 구체적인 건 정리하면서.. 

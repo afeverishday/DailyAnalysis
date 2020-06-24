@@ -3,7 +3,9 @@ Data Analysis Tutorial
 
 ## Introduce
 
-\*R 을 활용한 데이터 분석 예제 와 실습 데이터
+  - R 을 활용한 데이터 분석 예제 와 실습 데이터
+
+-----
 
 ### 0\. statistical hypothesis test
 
