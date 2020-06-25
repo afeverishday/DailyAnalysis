@@ -2,3 +2,6 @@ base
 data.table
 dplyr
 ggplot2
+knitr
+pastecs
+gridExtra

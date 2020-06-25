@@ -8,7 +8,7 @@ editor_options:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo=F, fig.align = "center", message=F, warning=F, fig.height = 8, cache=T, dpi = 300, dev = "jpeg")
+knitr::opts_chunk$set( fig.align = "center", message=F, warning=F, fig.height = 8, cache=T, dpi = 300, dev = "jpeg")
 ```
 
 # Introduce
@@ -35,60 +35,255 @@ Car Price 예제를 R을 활용하여 분석한다.
 library(data.table)
 library(dplyr)
 library(ggplot2)
+library(gridExtra)
 
 ```
 
 * 다음으로 데이터를 불러오고 해당 데이터를 살펴 본다.
 
-
+ 데이터를 불러올 때, 다양한 함수를 사용하지만 가장 기본적인 함수는 read.txt()나 read.csv() 등을 사용한다. 하지만, 해당 함수는 속도가 느려 데이터 파일이 커졌을 때 좋지않다. 따라서 여기서는 data.tabe 라이브러리내에 fread()를 사용하였다. 
 ```{r}
 car_price <-fread('C:/Users/afeve/Documents/Tutorials/Regression/Car_Price/carprice_total.csv', encoding = 'UTF-8')
 
 ```
 
+
+다음으로 데이터의 차원(레코드와 컬럼의 개수 )을 살펴 보기 위해서 dim()를 사용하였다. 
 ```{r}
 dim(car_price)
 
 ```
 
+head()함수는 데이터의 일부를 보여준다. 뒤에 인자로 숫자를 넣어서 개수를 지정할수 있다.
 ```{r}
-head(car_price)
+head(car_price, 10)
 
 ```
 
+tail()함수는 head()와 비슷한 기능을 하지만 반대로 데이터를 뒤에서 부터 보여준다.
+```{r}
+tail(car_price, 10)
+
+```
+
+str() 함수는 해당 데이터의 class와 레코드 수, 변수의 개수 이외에 추가적으로 각 변수의 자료형과 값의 일부를 보여준다.
+str()함수를 통해 자료 자체를 살펴볼수도 있지만 우리가 인식하기에는 head()함수를 통해 나오는 결과값과 같은 형태가 익숙하기 때문에 보통 추가적으로 작성하기도 한다.
 ```{r}
 str(car_price)
 
 ```
 
+
+위 head(),tail(), str() 등의 함수가 R base내 내장된 함수라면, glimpse()함수의 경우 dplyr package에서 제공하는 함수로 str()과 거으이 동일하나 형식이 조금 다르다. 개인적으로는 glimpse()함수를 선호하는 편이다.
 ```{r}
 glimpse(car_price)
 
 ```
 
 
+다음으로 is.na() 함수를 사용하여 결측값을 확인한다. 
+```{r}
+sum(is.na(car_price))
+
+```
+
+위 함수를 통해서 결측값의 개수를 살펴 볼 수 있지만 구체적으로 결측값이 어떤 컬럼(변수)에 존재하는지를 알 수 없기 때문에 아래의 함수를 통해 각 컬럼별로 결측값의 개수를 체크한다.
 ```{r}
 colSums(is.na(car_price))
 
 ```
 
+summary()는 데이터의 대표값을 계산해주는 함수로 최소값, 1사분위수, 중앙값, 평균, 3사분위수, 최대값을 보여준다.
+summary() : min, 1Q, median, mean, 3Q, max
 ```{r}
-num_var<- which(sapply(car_price,is.numeric)) %>% names()
-num_var
-
-```
-
-```{r}
-char_var<-which(sapply(car_price,is.character)) %>% names()
-char_var
+summary(car_price, digits=3)
 
 ```
 
 
+위 과정이 끝나면 데이터에 대한 계략적인 이해를 할수 있다. 하지만, 이를 통해 얻을수 있는 정보는 제한적이기 때문에 각 변수형에 따라 추가적인 정보를 알아볼 필요가 있다. 일반적으로 연속형 변수, 범주형 변수는 다르기 때문에 이에 해당하는 변수명을 먼저 구하고 추가적인 분석을 진행한다. 아래 code는 데이터내 숫자형 변수인지를 컬럼별로 체크하여 이에 해당하는 컬럼의 이름과 순서 값을 체크하고 그중 이름만을 반환하는 함수이다. 
 ```{r}
-summary(car_price)
+num_var<- which(sapply(car_price,is.numeric ))  %>% names() 
+```
+위 결과 중에, hybrid는 0과 1 값만을 가지는 것으로 보이며 이는 숫자형이라기 보다는  
+
+
+```{r}
+num_var<- num_var[!num_var %in% c('하이브리드')]
+```
+
+문자형 변수인지를 확인한다. 현재는 모든 범주형 변수가 character로 나와 있기 때문에 character변수들을 factor로 변환한 후에 진행한다. (factor형은 R에서만 가지는 고유한 자료형이다.) 여기서 사용한 apply함수는 sapply의 경우 vector 형을 반환하고, lapply의 경우 리스트형태로 출력된다. 이외에도 많지만 이에 대한 설명은 여기서 진행하지 않는다.
+```{r}
+chr_var <- which(sapply(car_price,is.character)) %>% names()
+chr_var
 
 ```
+
+```{r}
+car_price[ ,chr_var]<-lapply(car_price %>% select(chr_var), factor)
+
+```
+
+```{r}
+car_price$하이브리드<-as.factor(car_price$하이브리드)
+
+```
+
+
+변수를 factor형으로 바꾼후에 factor 헝변수의 이름을 따로 저장한다. 이유는 위에서 언급했던 것처럼 연속형 변수와 범주형 변수를 살펴보는 방법이 다르기 때문에 미리 저장해 놓는것이다.
+```{r}
+fact_var<-which(sapply(car_price,is.factor)) %>% names()
+fact_var
+
+```
+
+
+
+## 수치형 변수의 경우
+
+수치형 변수는 크게 실수형과 정수형으로 구분되며, 어떤 데이터의 경우에 정수형 데이터가 수량이 아니라 단순 구분을 위해서 입력된 값인 경우에 위에서 character변수를 factor로 바꾼것처럼 factor형 변수로 사용되기도 한다. 정수형임에도 정수의 범위가 매우 한정적이고, 순서를 가지지 않는 경우 이를 factor 형으로 사용한다. 
+
+ 수치형 변수는 크게 대표값과 상자 그림, 히스토그램 등을 통해서 변수별 분포를 살펴본다. 먼저 대표값을 수치로 확인하기 위해서 사용되는 함수는 위에서 설명했던 summary()함수가 있는데, 이는 R base에서 기본적으로 제공되는 함수이며, 제공하는 값이 Qunatile(분위수) 정도 밖에 없어서 데이터가 부족하다. 따라서 대안으로 사용될수 있는 함수는 psych패키지의 describe()함수와 pastecs 패키지의 stat.desc(cars)함수를 주로 사용한다. 개인적으로는 describe()함수를 선호하는 편이지만 더 많은 정보를 제공하는 함수는 stat.desc(cars)함수이다.
+
+* 해당 옵션은 숫자가 지수로 보이는 것을 방지한다.
+* r options(scipen = 10)
+
+```{r}
+psych::describe(car_price %>% select(num_var)) %>% round(3)
+```
+
+pastecs 패키지의 stat.desc(cars)함수를 사용하는 것이 좋아보인다. stat.desc()함수는 사분위수를 제외한 거의 모든 정보를 제공한다.
+```{r}
+pastecs::stat.desc(car_price%>% select(num_var)) %>% round(3)
+
+```
+
+
+다음으로 각 변수별 히스토그램과 커널 밀도 곡선을 통해 분포를 살펴본다. 물론 위에서 구한 수치로 이를 어느정도 알수 있지만 시각 정보가 이를 더 명확하게 보여주고, 어느 때는 더 많은 정보를 보여주기 때문에 함께 살펴 보아야 한다.
+```{r}
+p1<-ggplot(car_price, aes(x=가격, y=..density..)) + 
+   geom_histogram(binwidth=500, fill = "blue", colour="white", alpha=0.5) + 
+   geom_density(fill = NA, colour=NA, alpha=0.8) + 
+   geom_line(stat="density") + 
+   expand_limits(y=0) + 
+   ggtitle("Histogram + Kernel Density Curve")
+
+```
+
+
+```{r}
+p2<-ggplot(car_price, aes(x=년식, y=..density..)) + 
+   geom_histogram(binwidth=1, fill = "blue", colour="white", alpha=0.5) + 
+   geom_density(fill = NA, colour=NA, alpha=0.8) + 
+   geom_line(stat="density") + 
+   expand_limits(y=0) + 
+   ggtitle("Histogram + Kernel Density Curve")
+
+```
+
+```{r}
+p3<-ggplot(car_price, aes(x=중량, y=..density..)) + 
+   geom_histogram(binwidth=50, fill = "blue", colour="white", alpha=0.5) + 
+   geom_density(fill = NA, colour=NA, alpha=0.8) + 
+   geom_line(stat="density") + 
+   expand_limits(y=0) + 
+   ggtitle("Histogram + Kernel Density Curve")
+
+```
+
+```{r}
+p4<-ggplot(car_price, aes(x=연비, y=..density..)) + 
+   geom_histogram(binwidth=1, fill = "blue", colour="white", alpha=0.5) + 
+   geom_density(fill = NA, colour=NA, alpha=0.8) + 
+   geom_line(stat="density") + 
+   expand_limits(y=0) + 
+   ggtitle("Histogram + Kernel Density Curve")
+
+```
+
+```{r}
+p5<-ggplot(car_price, aes(x=마력, y=..density..)) + 
+   geom_histogram(binwidth=50, fill = "blue", colour="white", alpha=0.5) + 
+   geom_density(fill = NA, colour=NA, alpha=0.8) + 
+   geom_line(stat="density") + 
+   expand_limits(y=0) + 
+   ggtitle("Histogram + Kernel Density Curve")
+
+```
+
+```{r}
+p6<-ggplot(car_price, aes(x=토크, y=..density..)) + 
+   geom_histogram(binwidth=5, fill = "blue", colour="white", alpha=0.5) + 
+   geom_density(fill = NA, colour=NA, alpha=0.8) + 
+   geom_line(stat="density") + 
+   expand_limits(y=0) + 
+   ggtitle("Histogram + Kernel Density Curve")
+
+```
+
+```{r}
+p7<-ggplot(car_price, aes(x=배기량, y=..density..)) + 
+   geom_histogram(binwidth=500, fill = "blue", colour="white", alpha=0.5) + # alpha 반투명
+   geom_density(fill = NA, colour=NA, alpha=0.8) + 
+   geom_line(stat="density") + 
+   expand_limits(y=0) + 
+   ggtitle("Histogram + Kernel Density Curve")
+
+```
+
+위에서 저장한 plot을 화면 분할하여 표시
+```{r}
+grid.arrange(p1, p2,p3,p4,p5,p6,p7, ncol=2)
+
+```
+
+결과 해석:
+
+아래 그래프는 qqplot으로 해당 변수가 정규 분포와 얼마나 유사한지를 알아보기 위해서 사용된다.
+```{r}
+q1<-ggplot(car_price, aes(sample = 가격)) + 
+    geom_qq(color='black', alpha=0.5) + # alpha 반투명  
+    geom_qq_line(color='grey')+
+    ggtitle("Q-QPlot")
+q1
+
+```
+
+```{r}
+# Shapiro-Wilk normality test
+shapiro.test(car_price$가격)
+```
+
+
+## 범주형 변수의 경우
+
+
+
+
+
+
+
+
+위 summary()함수는 R base에서 기본적으로 제공되는 함수이며, 제공하는 값이 Qunatile(분위수) 정도 밖에 없어서 부족하다. 따라서 대안으로 사용될수 있는 함수는 psych패키지의 describe()함수와 pastecs 패키지의 stat.desc(cars)함수를 사용하는 것이 좋아보인다. 개인적으로는 describe()함수를 선호하는 편이지만 더 많은 정보를 제공하는 함수는 stat.desc(cars)함수이다.
+
+```{r}
+#psych::describe(car_price)
+
+```
+
+pastecs 패키지의 stat.desc(cars)함수를 사용하는 것이 좋아보인다.
+```{r}
+pastecs::stat.desc(car_price)
+
+```
+
+
+
+
+
+
+
+
 
 ```{r}
 table(car_price$종류)
@@ -219,7 +414,7 @@ fig.height | 7 | 덩어리로 생성되는 그래프에 대한 높이을 인치�
 2. kable을 활용하기
 
 ```{r}
-kable(iris[1:5, ], caption = "A caption")
+# kable(iris[1:5, ], caption = "A caption")
 ```
 
 
