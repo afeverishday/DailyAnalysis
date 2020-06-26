@@ -244,7 +244,9 @@ fact_var
 사용되는 함수는 위에서 설명했던 summary()함수가 있는데, 이는 R base에서 기본적으로 제공되는 함수이며,
 제공하는 값이 Qunatile(분위수) 정도 밖에 없어서 데이터가 부족하다. 따라서 대안으로 사용될수 있는 함수는
 psych패키지의 describe()함수와 pastecs 패키지의 stat.desc(cars)함수를 주로 사용한다. 개인적으로는
-describe()함수를 선호하는 편이지만 더 많은 정보를 제공하는 함수는 stat.desc(cars)함수이다.
+describe()함수를 선호하는 편이지만 더 많은 정보를 제공하는 함수는 stat.desc(cars)함수이다. 이때 주의할
+사항은 숫자형 변수를 지정한 상태로 함수의 인자로 넣어야 한다. 만약 그렇지 않다면 describe()함수의 경우는
+오류가 발생한다.
 
   - 해당 옵션은 숫자가 지수로 보이는 것을 방지한다.
   - r options(scipen = 10)
@@ -386,7 +388,8 @@ grid.arrange(p1, p2,p3,p4,p5,p6,p7, ncol=2)
 
 결과 해석:
 
-아래 그래프는 qqplot으로 해당 변수가 정규 분포와 얼마나 유사한지를 알아보기 위해서 사용된다.
+아래 그래프는 qqplot으로 해당 변수의 모집단 분포가 정규성을 만족하는지를 알아보기 위한 단계로 qqplot과 qqline,
+shapiro.test (Shapiro-Wilk normality test)등으로 그래프와 가설 검정을 통해서 살펴본다.
 
 ``` r
 q1<-ggplot(car_price, aes(sample = 가격)) + 
@@ -397,6 +400,12 @@ q1
 ```
 
 <img src="car_price_files/figure-gfm/unnamed-chunk-27-1.jpeg" style="display: block; margin: auto;" />
+
+아래 Shapiro-Wilk normality test의 가설은 다음과 같다.
+
+귀무가설 H0 : 모집단은 정규분포를 따른다
+
+대립가설 H1 : 모집단은 정규분포를 따르지 않는다
 
 ``` r
 # Shapiro-Wilk normality test
@@ -410,6 +419,69 @@ shapiro.test(car_price$가격)
     ## W = 0.60463, p-value = 3.697e-15
 
 ## 범주형 변수의 경우
+
+범주형 데이터는 연속형 변수와 달라 평균이나, 분산들이 큰 의미가 없다.(물론, 0,1 값만 가지는 경우에 평균이 0.5라면 값이
+고르게 분포해 있다던가는 알수 있겠지만) 범주형 변수는 보통 테이블을 통해서 보는데 table이나 이를 비율로 바꾸어 보여주는
+prop.table(), 그리고 포뮬러를 함께 사용할수 있는 xtabs() 함수 등이 있다. 개인적인 선호는 table을
+기본적으로 사용하고, 여러 테이블을 한꺼번에 보고자 할때는 xtabs의 포뮬러를 사용해서본다.
+
+``` r
+table(car_price$종류,useNA = "ifany") # NA를 분할표에 포함
+```
+
+    ## 
+    ##   대형   소형 준중형   중형 
+    ##     35     24     25     18
+
+``` r
+#prop.table(car_price$종류)
+```
+
+``` r
+xtabs(~종류, car_price)
+```
+
+    ## 종류
+    ##   대형   소형 준중형   중형 
+    ##     35     24     25     18
+
+``` r
+bar1<-ggplot(car_price, aes(종류)) + 
+   geom_bar(fill='blue',stat='count') + # stat='count' 빈도를 표시시
+   ggtitle("bar plot")
+```
+
+``` r
+bar2<-ggplot(car_price, aes(연료)) + 
+   geom_bar(fill='blue',stat='count') + # stat='count' 빈도를 표시시
+   ggtitle("bar plot")
+```
+
+``` r
+bar3<-ggplot(car_price, aes(하이브리드)) + 
+   geom_bar(fill='blue',stat='count') + # stat='count' 빈도를 표시시
+   ggtitle("bar plot")
+```
+
+``` r
+bar4<-ggplot(car_price, aes(변속기)) + 
+   geom_bar(fill='blue',stat='count') + # stat='count' 빈도를 표시시
+   ggtitle("bar plot")
+```
+
+``` r
+bar5<-ggplot(car_price, aes(년식)) + 
+   geom_bar(fill='blue',stat='count') + # stat='count' 빈도를 표시시
+   ggtitle("bar plot")
+```
+
+위에서 저장한 plot을 화면 분할하여 표시
+
+``` r
+grid.arrange(bar1, bar2,bar3,bar4,bar5, ncol=2)
+```
+
+<img src="car_price_files/figure-gfm/unnamed-chunk-36-1.jpeg" style="display: block; margin: auto;" />
 
 위 summary()함수는 R base에서 기본적으로 제공되는 함수이며, 제공하는 값이 Qunatile(분위수) 정도 밖에 없어서
 부족하다. 따라서 대안으로 사용될수 있는 함수는 psych패키지의 describe()함수와 pastecs 패키지의
@@ -456,30 +528,6 @@ pastecs::stat.desc(car_price)
     ## var           143.817935   NA         NA 5.238908e+05 1.417991e+05     NA
     ## std.dev        11.992412   NA         NA 7.238030e+02 3.765622e+02     NA
     ## coef.var        0.407294   NA         NA 3.367985e-01 2.407566e-01     NA
-
-``` r
-table(car_price$종류)
-```
-
-    ## 
-    ##   대형   소형 준중형   중형 
-    ##     35     24     25     18
-
-``` r
-table(car_price$연료)
-```
-
-    ## 
-    ##    LPG 가솔린   디젤 
-    ##      7     52     43
-
-``` r
-table(car_price$변속기)
-```
-
-    ## 
-    ## 수동 자동 
-    ##   32   70
 
 ``` r
 table(car_price$종류, car_price$연료)
