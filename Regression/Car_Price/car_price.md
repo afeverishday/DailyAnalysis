@@ -1,7 +1,7 @@
 Regression1.Car Price
 ================
 JayHKim
-2020-06-26
+2020-06-30
 
 # Introduce
 
@@ -469,6 +469,8 @@ bar4<-ggplot(car_price, aes(변속기)) +
    ggtitle("bar plot")
 ```
 
+년식의 경우 숫자형 변수로 구분하였기는 하나 어느 년식의 차가 가장 많은지를 보고 싶어서 넣었다.
+
 ``` r
 bar5<-ggplot(car_price, aes(년식)) + 
    geom_bar(fill='blue',stat='count') + # stat='count' 빈도를 표시시
@@ -482,6 +484,307 @@ grid.arrange(bar1, bar2,bar3,bar4,bar5, ncol=2)
 ```
 
 <img src="car_price_files/figure-gfm/unnamed-chunk-36-1.jpeg" style="display: block; margin: auto;" />
+
+위 과정이 끝나면 데이터의 각 변수 별로 바라보는 일은 어느 정도 끝났다. 다음으로 살펴 봐야 할 것은 변수 간의 관계를 살펴
+보는 것으로 이는 수랑형 변수와 범주형 변수 두 가지 변수로 나뉘기 때문에 크게 수치형 변수 x 수치형 변수, 범주형 변수
+x 수치형 변수, 범주형 변수 x 범주형 변수 크게 세가지 유형으로 살펴 볼 수 있다. 물론 여기서 모든 변수를 살펴 보기는 할
+것이지만 우리의 목적이 자동차 가격을 예측하는 것이기 때문이 이를 종속변수로 두고 수치형 변수 x 자동차 가격(수치형),
+범주형 변수 x 자동차 가격(수치형) 을 중심으로 살펴보는 것이 더 중요하다.
+
+## 1.수치형 x 수치형 변수
+
+수치형 변수들간의 관계를 알아보기 위한 탐색적 분석은 크게 세 가지 정도로 진행 될 수 있다. 그 첫 번째는 산점도을 살펴 보는
+것이다. 변수를 xy 두 축에 각각 놓고 데이터를 점으로 표시해 봄에 따라 두 변수간의 관계를 계략적으로 살펴보는 방법이다.
+
+  - 산점도
+
+<!-- end list -->
+
+``` r
+d1 <-car_price %>% ggplot(aes(연비, 가격)) +geom_jitter() +geom_smooth(method="lm")
+```
+
+``` r
+d2 <-car_price %>% ggplot(aes(마력, 가격)) +geom_jitter() +geom_smooth(method="lm")
+```
+
+``` r
+d3 <-car_price %>% ggplot(aes(토크, 가격)) +geom_jitter() +geom_smooth(method="lm")
+```
+
+``` r
+d4 <-car_price %>% ggplot(aes(배기량, 가격)) +geom_jitter() +geom_smooth(method="lm")
+```
+
+``` r
+d5 <-car_price %>% ggplot(aes(중량, 가격)) +geom_jitter() +geom_smooth(method="lm")
+```
+
+위에서 저장한 plot을 화면 분할하여 표시
+
+``` r
+grid.arrange(d1, d2, d3, d4, d5, ncol=2)
+```
+
+<img src="car_price_files/figure-gfm/unnamed-chunk-42-1.jpeg" style="display: block; margin: auto;" />
+
+다음으로 변수 간의 관계를 보여주는 상관계수를 살펴본다. 먼저 살펴 볼 상관계수는 일반적으로 사용하는 피어슨 상관계수로 선형적
+관계를 보여준다. 공식은 다음과 같다.
+
+![그림예제](C:/Users/afeve/Documents/Tutorials/Regression/Car_Price/correlation.jpg)
+
+이 값은 -1 부터 1 사이의 값을 가지며 절대값이 클수록 선형적인 관계가 크고, 0에 가까울수록 선형적인 강도가 약하다고
+판단한다. 하지만 이는 단순히 선형적인 관계만을 보여주기 때문에, 이 것만으로 두 변수의 관계를 유추하는데 무리가
+있다.따라서 산점도 그래프를 그려서 함께 살펴본다.
+
+![그림예제](C:/Users/afeve/Documents/Tutorials/Regression/Car_Price/correlation2.png)
+
+위 숫자는 각 변수들 간의 상관계수 값을 나타낸 것이며, 각 그림은 산점도를 뜻한다. 여기서 눈 여겨 보아야 할 것은 두번째 줄에
+나타난 것처럼 모든 그래프가 상관계수가 1임에도 불구하고 각각의 기울기는 다르다는 것이다. 따라서 상관계수는 선형적으로 데이터가
+나타나는 지를 보여줄 뿐 실제로 그 데이터가 어떤 기울기로 관계있는지는 알려주지 않는다. 또한, 세번째 줄에서 보이는 것처럼
+분명한 경향을 보임에도 불구하고 상관계수는 아무런 관계가 없다고 나타내게 된다.
+
+``` r
+correaltion<-car_price %>% select(가격, 연비, 년식, 토크, 마력, 배기량, 중량) %>% cor()
+correaltion
+```
+
+    ##              가격       연비       년식       토크       마력     배기량
+    ## 가격    1.0000000 -0.3750416  0.2883369  0.5344032  0.8683213  0.8518502
+    ## 연비   -0.3750416  1.0000000 -0.2798360 -0.2499411 -0.5042319 -0.6692783
+    ## 년식    0.2883369 -0.2798360  1.0000000  0.5078543  0.4403253  0.3964289
+    ## 토크    0.5344032 -0.2499411  0.5078543  1.0000000  0.6450841  0.6207311
+    ## 마력    0.8683213 -0.5042319  0.4403253  0.6450841  1.0000000  0.9109432
+    ## 배기량  0.8518502 -0.6692783  0.3964289  0.6207311  0.9109432  1.0000000
+    ## 중량    0.4992084 -0.7015424  0.5029223  0.7541077  0.6060561  0.7517414
+    ##              중량
+    ## 가격    0.4992084
+    ## 연비   -0.7015424
+    ## 년식    0.5029223
+    ## 토크    0.7541077
+    ## 마력    0.6060561
+    ## 배기량  0.7517414
+    ## 중량    1.0000000
+
+``` r
+correaltion %>% corrplot::corrplot(method='color', type = 'upper', diag = F, number.cex = 1, addCoef.col = 'black')
+```
+
+<img src="car_price_files/figure-gfm/unnamed-chunk-44-1.jpeg" style="display: block; margin: auto;" />
+
+또한 상관계수는 그 자체로 상관분석으로 사용되는데 이때 사용되는 가설은 다음과 같다.
+
+귀무가설: 두 수치형 자료 간의 선형적인 상관관계가 존재한다.
+
+대립가설: 두 수치형 자료 간의 선형적인 상관관계가 존재하지 않는다.
+
+``` r
+cor.test(car_price$가격, car_price$연비)
+```
+
+    ## 
+    ##  Pearson's product-moment correlation
+    ## 
+    ## data:  car_price$가격 and car_price$연비
+    ## t = -4.0457, df = 100, p-value = 0.0001028
+    ## alternative hypothesis: true correlation is not equal to 0
+    ## 95 percent confidence interval:
+    ##  -0.5308018 -0.1947727
+    ## sample estimates:
+    ##        cor 
+    ## -0.3750416
+
+``` r
+cor.test(car_price$가격, car_price$년식)
+```
+
+    ## 
+    ##  Pearson's product-moment correlation
+    ## 
+    ## data:  car_price$가격 and car_price$년식
+    ## t = 3.0113, df = 100, p-value = 0.003294
+    ## alternative hypothesis: true correlation is not equal to 0
+    ## 95 percent confidence interval:
+    ##  0.09943794 0.45717600
+    ## sample estimates:
+    ##       cor 
+    ## 0.2883369
+
+``` r
+cor.test(car_price$가격, car_price$토크)
+```
+
+    ## 
+    ##  Pearson's product-moment correlation
+    ## 
+    ## data:  car_price$가격 and car_price$토크
+    ## t = 6.3226, df = 100, p-value = 7.251e-09
+    ## alternative hypothesis: true correlation is not equal to 0
+    ## 95 percent confidence interval:
+    ##  0.3793538 0.6602587
+    ## sample estimates:
+    ##       cor 
+    ## 0.5344032
+
+``` r
+cor.test(car_price$가격, car_price$마력)
+```
+
+    ## 
+    ##  Pearson's product-moment correlation
+    ## 
+    ## data:  car_price$가격 and car_price$마력
+    ## t = 17.506, df = 100, p-value < 2.2e-16
+    ## alternative hypothesis: true correlation is not equal to 0
+    ## 95 percent confidence interval:
+    ##  0.8107561 0.9092535
+    ## sample estimates:
+    ##       cor 
+    ## 0.8683213
+
+``` r
+cor.test(car_price$가격, car_price$배기량)
+```
+
+    ## 
+    ##  Pearson's product-moment correlation
+    ## 
+    ## data:  car_price$가격 and car_price$배기량
+    ## t = 16.263, df = 100, p-value < 2.2e-16
+    ## alternative hypothesis: true correlation is not equal to 0
+    ## 95 percent confidence interval:
+    ##  0.7879019 0.8976219
+    ## sample estimates:
+    ##       cor 
+    ## 0.8518502
+
+``` r
+cor.test(car_price$가격, car_price$중량)
+```
+
+    ## 
+    ##  Pearson's product-moment correlation
+    ## 
+    ## data:  car_price$가격 and car_price$중량
+    ## t = 5.7613, df = 100, p-value = 9.258e-08
+    ## alternative hypothesis: true correlation is not equal to 0
+    ## 95 percent confidence interval:
+    ##  0.3374990 0.6322976
+    ## sample estimates:
+    ##       cor 
+    ## 0.4992084
+
+다른 상관계수로 spearman의 순위 상관계수가 있는 이는 분포가 정규분포를 심하게 벗어나거나 크기보다 순서가 중요하게 나타나는
+변수일때 사용된다. 비모수 통계량에 주로 쓰인다. 절차와 검정은 동일하기 때문에 생략한다. 마지막으로 최근에 최대정보계수를 이용한
+상관분석법이 등장하고 있는데 이는 MINE package에 있는 mine()함수를 사용한다. 데이터가 많은 경우에 버든이 존재하기
+때문에 비모수인 경우나 데이터가 적은경우에만 사용할 것을 추천한다. 최대정보계수에 관한 설명은 아래에 들어가서 확인해보기를
+바란다.
+
+  - 최대정보계수
+
+<https://datascienceschool.net/view-notebook/ff367da95afc43ed8ae6ec30efc0fb9f/>
+
+## 2.범주형 x 수치형 변수
+
+다음은 범주형 변수와 수치형 변수간의 관계를 살펴 보는 것인데, 이를 살펴보는 방법은 크게 두가지이다. 첫 번째 방법은 각
+범주별로 상자그림을 그려서 범주에 따른 분포가 다른지를 살펴보는 방법이고, 두번째 방법은 이를 검정을 통해 분석하는
+방법이다.
+
+``` r
+box1 <- ggplot(car_price, aes(종류 ,가격) )+
+   geom_boxplot(fill='blue',color='black',width=0.5)+
+   stat_summary(fun.y="mean", geom="point", shape=22, size=3, fill="red") # 평균추가
+```
+
+``` r
+box2 <- ggplot(car_price, aes(연료 ,가격) )+
+   geom_boxplot(fill='blue',color='black',width=0.5)+
+   stat_summary(fun.y="mean", geom="point", shape=22, size=3, fill="red") # 평균추가
+```
+
+``` r
+box3<- ggplot(car_price, aes(하이브리드 ,가격) )+
+   geom_boxplot(fill='blue',color='black',width=0.5)+
+   stat_summary(fun.y="mean", geom="point", shape=22, size=3, fill="red") # 평균추가
+```
+
+``` r
+box4 <- ggplot(car_price, aes(변속기 ,가격) )+
+   geom_boxplot(fill='blue',color='black',width=0.5)+
+   stat_summary(fun.y="mean", geom="point", shape=22, size=3, fill="red") # 평균추가
+```
+
+위에서 저장한 plot을 화면 분할하여 표시
+
+``` r
+grid.arrange(box1, box2, box3, box4, ncol=2)
+```
+
+<img src="car_price_files/figure-gfm/unnamed-chunk-55-1.jpeg" style="display: block; margin: auto;" />
+
+추가적으로 집단간 평균값을 뽑아서 비교해보는 것도 좋은 방법이다.
+
+``` r
+# descriptive statistics by group
+tapply(car_price$가격, car_price$연료, summary)
+```
+
+    ## $LPG
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##    1850    1882    1915    1916    1915    2054 
+    ## 
+    ## $가솔린
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##     870    1270    1865    2711    3108   14570 
+    ## 
+    ## $디젤
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##    1430    1928    2160    2346    2781    4058
+
+boxplot을 통해 육안으로 이 값을 확인하였다면, 이후에는 t-검정, 분산분석 등을 통해 두 집단 간의 값의 차이가 실제로
+있는 통계적 검정을 수행할수 있다. 이때 가설은 다음과 같다. 이때 t-검정과 anova 검정의 가설이 동일하기 때문에
+함께 구분하지 않았다. (실제로 검정을 할때 사용되는 함수가 다르기 때문에 , anova로 통일해서 사용해도 상관없다.)
+
+여기서는 두 개의 값을 가지는 하이브리드, 변속기의 경우 t-test로, 나머지 세개 이상의 집단을 가지는 연료, 종류의 경우
+anova -test를 통해 이를 검정해 보겠다. 먼저 t-test의 경우 다음과 같다.하지만 위 테스트를 진행하기 앞서 진행할
+테스트가 있다. 두 집단 간의 오차의 등분산 가정이 만족안한다면 테스트가 구별되기 때문에 먼저 집단 간 분산이 다른지를
+검정한다.
+
+귀무가설 H0 : 모든 집단의 평균이 동일하다.(t-test인 경우 두 집단의 평균이 같다)
+
+대립가설 H1 : H0가 아니다. (H0의 여집합) =\> 대립가설을 다음과 같이 적은 이유는 H1이 H0의 여집합으로 세집단이
+있을때 특정 한 집단만 평균이 다르다고 해도 귀무가설을 기각하기 때문이다
+
+``` r
+# Bartlett test to test the null hypothesis of equal group variances
+bartlett.test(가격 ~ 종류, data = car_price)
+```
+
+    ## 
+    ##  Bartlett test of homogeneity of variances
+    ## 
+    ## data:  가격 by 종류
+    ## Bartlett's K-squared = 185.76, df = 3, p-value < 2.2e-16
+
+``` r
+# one-wayANOVA
+summary(aov(가격 ~ 종류, data = car_price))
+```
+
+    ##             Df    Sum Sq  Mean Sq F value   Pr(>F)    
+    ## 종류         3  78695206 26231735   9.803 1.03e-05 ***
+    ## Residuals   98 262235490  2675872                     
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+``` r
+# one-wayANOVA
+summary(aov(가격 ~ 연료, data = car_price))
+```
+
+    ##             Df    Sum Sq Mean Sq F value Pr(>F)
+    ## 연료         2   5722895 2861448   0.845  0.433
+    ## Residuals   99 335207801 3385937
 
 위 summary()함수는 R base에서 기본적으로 제공되는 함수이며, 제공하는 값이 Qunatile(분위수) 정도 밖에 없어서
 부족하다. 따라서 대안으로 사용될수 있는 함수는 psych패키지의 describe()함수와 pastecs 패키지의
