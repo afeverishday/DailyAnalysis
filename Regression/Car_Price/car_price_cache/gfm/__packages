@@ -5,3 +5,8 @@ ggplot2
 knitr
 pastecs
 gridExtra
+aplpack
+sgeostat
+mvoutlier
+rpart
+chemometrics

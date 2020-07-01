@@ -1,7 +1,7 @@
 Regression1.Car Price
 ================
 JayHKim
-2020-06-30
+2020-07-01
 
 # Introduce
 
@@ -389,7 +389,8 @@ grid.arrange(p1, p2,p3,p4,p5,p6,p7, ncol=2)
 결과 해석:
 
 아래 그래프는 qqplot으로 해당 변수의 모집단 분포가 정규성을 만족하는지를 알아보기 위한 단계로 qqplot과 qqline,
-shapiro.test (Shapiro-Wilk normality test)등으로 그래프와 가설 검정을 통해서 살펴본다.
+shapiro.test (Shapiro-Wilk normality test), Kolmogorov-Smirnov test등으로
+그래프와 가설 검정을 통해서 살펴본다.
 
 ``` r
 q1<-ggplot(car_price, aes(sample = 가격)) + 
@@ -417,6 +418,20 @@ shapiro.test(car_price$가격)
     ## 
     ## data:  car_price$가격
     ## W = 0.60463, p-value = 3.697e-15
+
+``` r
+# Kolmogorov-Smirnov test
+ks.test(car_price$가격, "pnorm", mean= mean(car_price$가격), sd = sd(car_price$가격))
+```
+
+    ## 
+    ##  One-sample Kolmogorov-Smirnov test
+    ## 
+    ## data:  car_price$가격
+    ## D = 0.21341, p-value = 0.0001845
+    ## alternative hypothesis: two-sided
+
+추가적으로 정규성 검정에 사용되는 함수로 library(nortest)에서 제공하는 lillie.test()도 있다.
 
 ## 범주형 변수의 경우
 
@@ -483,7 +498,7 @@ bar5<-ggplot(car_price, aes(년식)) +
 grid.arrange(bar1, bar2,bar3,bar4,bar5, ncol=2)
 ```
 
-<img src="car_price_files/figure-gfm/unnamed-chunk-36-1.jpeg" style="display: block; margin: auto;" />
+<img src="car_price_files/figure-gfm/unnamed-chunk-37-1.jpeg" style="display: block; margin: auto;" />
 
 위 과정이 끝나면 데이터의 각 변수 별로 바라보는 일은 어느 정도 끝났다. 다음으로 살펴 봐야 할 것은 변수 간의 관계를 살펴
 보는 것으로 이는 수랑형 변수와 범주형 변수 두 가지 변수로 나뉘기 때문에 크게 수치형 변수 x 수치형 변수, 범주형 변수
@@ -526,7 +541,7 @@ d5 <-car_price %>% ggplot(aes(중량, 가격)) +geom_jitter() +geom_smooth(metho
 grid.arrange(d1, d2, d3, d4, d5, ncol=2)
 ```
 
-<img src="car_price_files/figure-gfm/unnamed-chunk-42-1.jpeg" style="display: block; margin: auto;" />
+<img src="car_price_files/figure-gfm/unnamed-chunk-43-1.jpeg" style="display: block; margin: auto;" />
 
 다음으로 변수 간의 관계를 보여주는 상관계수를 살펴본다. 먼저 살펴 볼 상관계수는 일반적으로 사용하는 피어슨 상관계수로 선형적
 관계를 보여준다. 공식은 다음과 같다.
@@ -570,7 +585,7 @@ correaltion
 correaltion %>% corrplot::corrplot(method='color', type = 'upper', diag = F, number.cex = 1, addCoef.col = 'black')
 ```
 
-<img src="car_price_files/figure-gfm/unnamed-chunk-44-1.jpeg" style="display: block; margin: auto;" />
+<img src="car_price_files/figure-gfm/unnamed-chunk-45-1.jpeg" style="display: block; margin: auto;" />
 
 또한 상관계수는 그 자체로 상관분석으로 사용되는데 이때 사용되는 가설은 다음과 같다.
 
@@ -720,9 +735,30 @@ box4 <- ggplot(car_price, aes(변속기 ,가격) )+
 grid.arrange(box1, box2, box3, box4, ncol=2)
 ```
 
-<img src="car_price_files/figure-gfm/unnamed-chunk-55-1.jpeg" style="display: block; margin: auto;" />
+<img src="car_price_files/figure-gfm/unnamed-chunk-56-1.jpeg" style="display: block; margin: auto;" />
 
 추가적으로 집단간 평균값을 뽑아서 비교해보는 것도 좋은 방법이다.
+
+``` r
+# descriptive statistics by group
+tapply(car_price$가격, car_price$종류, summary)
+```
+
+    ## $대형
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##    1430    1915    2160    3465    4024   14570 
+    ## 
+    ## $소형
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##     870    1135    1270    1285    1448    1645 
+    ## 
+    ## $준중형
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##    1410    1845    2054    1986    2250    2430 
+    ## 
+    ## $중형
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##    2255    2708    2874    2974    3256    3802
 
 ``` r
 # descriptive statistics by group
@@ -741,19 +777,52 @@ tapply(car_price$가격, car_price$연료, summary)
     ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
     ##    1430    1928    2160    2346    2781    4058
 
+``` r
+# descriptive statistics by group
+tapply(car_price$가격, car_price$하이브리드, summary)
+```
+
+    ## $`0`
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##     870    1551    1960    2494    2781   14570 
+    ## 
+    ## $`1`
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##    2054    2462    2870    2791    3160    3450
+
+``` r
+# descriptive statistics by group
+tapply(car_price$가격, car_price$변속기, summary)
+```
+
+    ## $수동
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##    1104    1425    1868    1820    2152    3091 
+    ## 
+    ## $자동
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##     870    1656    2220    2815    3271   14570
+
 boxplot을 통해 육안으로 이 값을 확인하였다면, 이후에는 t-검정, 분산분석 등을 통해 두 집단 간의 값의 차이가 실제로
 있는 통계적 검정을 수행할수 있다. 이때 가설은 다음과 같다. 이때 t-검정과 anova 검정의 가설이 동일하기 때문에
 함께 구분하지 않았다. (실제로 검정을 할때 사용되는 함수가 다르기 때문에 , anova로 통일해서 사용해도 상관없다.)
 
 여기서는 두 개의 값을 가지는 하이브리드, 변속기의 경우 t-test로, 나머지 세개 이상의 집단을 가지는 연료, 종류의 경우
-anova -test를 통해 이를 검정해 보겠다. 먼저 t-test의 경우 다음과 같다.하지만 위 테스트를 진행하기 앞서 진행할
-테스트가 있다. 두 집단 간의 오차의 등분산 가정이 만족안한다면 테스트가 구별되기 때문에 먼저 집단 간 분산이 다른지를
-검정한다.
+anova -test를 통해 이를 검정해 보겠다. 먼저 t-test의 경우 다음과 같다.하지만 위 테스트를 진행하기 앞서 가정을
+확인할 필요가 있다. t-test와 anova test의 경우 (오차의)정규성과 (오차의)등분산성을 만족해야하는데 이때
+정규성을 만족안한다면, t-test는 대신 비모수 검정 방법인 Wilcoxon rank sum test 를
+진행하고, anova test의 경우 Kruskal-Waliis test를 진행한다.(그러나 실제 데이터에서
+정규성을 만족하지 않는 경우가 왕왕 있기 때문에 정규분포에 근사하지만 약간 벗어난다면 그냥 사용해도 무방하며,
+정규분포와 매우 다르다면 이 경우에 변수에 log를 씌워주는 등의 방법을 사용한다.) 정규성을 확인하는 방법은 위에서
+언급했던 Q-Qplot과 shapiro-test, Kolmogorov-Smirnov test 등이 잇다.
 
-귀무가설 H0 : 모든 집단의 평균이 동일하다.(t-test인 경우 두 집단의 평균이 같다)
+정규성이 만족했다면 다음은 두 집단 간의 오차의 등분산 가정이 만족안한다면 테스트가 구별되기 때문에 먼저 집단 간 분산이 다른지를
+검정한다. 이 경우에도 두 집단이 있어 t-test를 진행하려는 군은 F-test를 수행하고, 세 집단 이상이 존재하여
+anaova 테스트를 하는 그룹간에는 Bartlett test 혹은 levene.test()를 진행한다. 가설은 동일하다.
 
-대립가설 H1 : H0가 아니다. (H0의 여집합) =\> 대립가설을 다음과 같이 적은 이유는 H1이 H0의 여집합으로 세집단이
-있을때 특정 한 집단만 평균이 다르다고 해도 귀무가설을 기각하기 때문이다
+귀무가설 H0 : 그룹간 variance분산이 동일하다.
+
+대립가설 H1 : H0가 아니다. (H0의 여집합)
 
 ``` r
 # Bartlett test to test the null hypothesis of equal group variances
@@ -765,6 +834,66 @@ bartlett.test(가격 ~ 종류, data = car_price)
     ## 
     ## data:  가격 by 종류
     ## Bartlett's K-squared = 185.76, df = 3, p-value < 2.2e-16
+
+이때 등분산 가정이 만족되지 않을 경우에는 ANOVA를 수행할 수 없기 때문에 이때는 Welch’s ANOVA를 수행한다.
+
+``` r
+# Bartlett test to test the null hypothesis of equal group variances
+bartlett.test(가격 ~ 연료, data = car_price)
+```
+
+    ## 
+    ##  Bartlett test of homogeneity of variances
+    ## 
+    ## data:  가격 by 연료
+    ## Bartlett's K-squared = 89.606, df = 2, p-value < 2.2e-16
+
+이때 등분산 가정이 만족되지 않을 경우에는 ANOVA를 수행할 수 없기 때문에 이때는 Welch’s ANOVA를 수행한다.
+
+``` r
+# independent two sample variance test : var.test()
+var.test(가격 ~ 하이브리드, data = car_price)
+```
+
+    ## 
+    ##  F test to compare two variances
+    ## 
+    ## data:  가격 by 하이브리드
+    ## F = 7.0474, num df = 98, denom df = 2, p-value = 0.2642
+    ## alternative hypothesis: true ratio of variances is not equal to 1
+    ## 95 percent confidence interval:
+    ##   0.1784704 27.0005391
+    ## sample estimates:
+    ## ratio of variances 
+    ##           7.047383
+
+만약 위 결과가 두 집단의 분산이 다르다고 나타나면 아래에서 t-test를 진행할때 var.equal=F를 지정하고, 그렇지
+않다면 T를 지정한다.
+
+``` r
+# independent two sample variance test : var.test()
+var.test(가격 ~ 변속기, data = car_price)
+```
+
+    ## 
+    ##  F test to compare two variances
+    ## 
+    ## data:  가격 by 변속기
+    ## F = 0.058003, num df = 31, denom df = 69, p-value = 3.896e-13
+    ## alternative hypothesis: true ratio of variances is not equal to 1
+    ## 95 percent confidence interval:
+    ##  0.03270867 0.11039985
+    ## sample estimates:
+    ## ratio of variances 
+    ##         0.05800281
+
+만약 위 결과가 두 집단의 분산이 다르다고 나타나면 아래에서 t-test를 진행할때 var.equal=F를 지정하고, 그렇지
+않다면 T를 지정한다.
+
+귀무가설 H0 : 모든 집단의 평균이 동일하다.(t-test인 경우 두 집단의 평균이 같다)
+
+대립가설 H1 : H0가 아니다. (H0의 여집합) =\> 대립가설을 다음과 같이 적은 이유는 H1이 H0의 여집합으로 세집단이
+있을때 특정 한 집단만 평균이 다르다고 해도 귀무가설을 기각하기 때문이다
 
 ``` r
 # one-wayANOVA
@@ -786,116 +915,318 @@ summary(aov(가격 ~ 연료, data = car_price))
     ## 연료         2   5722895 2861448   0.845  0.433
     ## Residuals   99 335207801 3385937
 
-위 summary()함수는 R base에서 기본적으로 제공되는 함수이며, 제공하는 값이 Qunatile(분위수) 정도 밖에 없어서
-부족하다. 따라서 대안으로 사용될수 있는 함수는 psych패키지의 describe()함수와 pastecs 패키지의
-stat.desc(cars)함수를 사용하는 것이 좋아보인다. 개인적으로는 describe()함수를 선호하는 편이지만 더 많은
-정보를 제공하는 함수는 stat.desc(cars)함수이다.
-
 ``` r
-#psych::describe(car_price)
+# t-test
+t.test(가격 ~ 하이브리드, data = car_price, 
+       alternative = c("two.sided"), # c("two.sided", "less", "greater"),
+       var.equal = FALSE, 
+       conf.level = 0.95)
 ```
 
-pastecs 패키지의 stat.desc(cars)함수를 사용하는 것이 좋아보인다.
-
-``` r
-pastecs::stat.desc(car_price)
-```
-
-    ##                      가격         년식 종류         연비         마력
-    ## nbr.val      1.020000e+02 1.020000e+02   NA  102.0000000 1.020000e+02
-    ## nbr.null     0.000000e+00 0.000000e+00   NA    0.0000000 0.000000e+00
-    ## nbr.na       0.000000e+00 0.000000e+00   NA    0.0000000 0.000000e+00
-    ## min          8.700000e+02 2.010000e+03   NA    6.3000000 9.500000e+01
-    ## max          1.457000e+04 2.015000e+03   NA   19.0000000 4.160000e+02
-    ## range        1.370000e+04 5.000000e+00   NA   12.7000000 3.210000e+02
-    ## sum          2.552920e+05 2.054800e+05   NA 1261.5000000 1.799800e+04
-    ## median       2.007000e+03 2.015000e+03   NA   12.6000000 1.700000e+02
-    ## mean         2.502863e+03 2.014510e+03   NA   12.3676471 1.764510e+02
-    ## SE.mean      1.819166e+02 1.121134e-01   NA    0.3144027 6.342359e+00
-    ## CI.mean.0.95 3.608736e+02 2.224029e-01   NA    0.6236905 1.258153e+01
-    ## var          3.375551e+06 1.282081e+00   NA   10.0826063 4.103003e+03
-    ## std.dev      1.837267e+03 1.132290e+00   NA    3.1753120 6.405468e+01
-    ## coef.var     7.340664e-01 5.620674e-04   NA    0.2567434 3.630169e-01
-    ##                     토크 연료 하이브리드       배기량         중량 변속기
-    ## nbr.val       102.000000   NA         NA 1.020000e+02 1.020000e+02     NA
-    ## nbr.null        0.000000   NA         NA 0.000000e+00 0.000000e+00     NA
-    ## nbr.na          0.000000   NA         NA 0.000000e+00 0.000000e+00     NA
-    ## min            12.700000   NA         NA 1.368000e+03 1.035000e+03     NA
-    ## max            52.000000   NA         NA 5.038000e+03 2.383000e+03     NA
-    ## range          39.300000   NA         NA 3.670000e+03 1.348000e+03     NA
-    ## sum          3003.300000   NA         NA 2.192050e+05 1.595360e+05     NA
-    ## median         27.750000   NA         NA 1.999000e+03 1.587500e+03     NA
-    ## mean           29.444118   NA         NA 2.149069e+03 1.564078e+03     NA
-    ## SE.mean         1.187426   NA         NA 7.166718e+01 3.728522e+01     NA
-    ## CI.mean.0.95    2.355533   NA         NA 1.421684e+02 7.396384e+01     NA
-    ## var           143.817935   NA         NA 5.238908e+05 1.417991e+05     NA
-    ## std.dev        11.992412   NA         NA 7.238030e+02 3.765622e+02     NA
-    ## coef.var        0.407294   NA         NA 3.367985e-01 2.407566e-01     NA
-
-``` r
-table(car_price$종류, car_price$연료)
-```
-
-    ##         
-    ##          LPG 가솔린 디젤
-    ##   대형     6     12   17
-    ##   소형     0     20    4
-    ##   준중형   1     12   12
-    ##   중형     0      8   10
-
-``` r
-table(car_price$종류, car_price$연료)
-```
-
-    ##         
-    ##          LPG 가솔린 디젤
-    ##   대형     6     12   17
-    ##   소형     0     20    4
-    ##   준중형   1     12   12
-    ##   중형     0      8   10
-
-``` r
-table(car_price$종류, car_price$변속기)
-```
-
-    ##         
-    ##          수동 자동
-    ##   대형     11   24
-    ##   소형      9   15
-    ##   준중형   10   15
-    ##   중형      2   16
-
-``` r
-table( car_price$연료, car_price$변속기)
-```
-
-    ##         
-    ##          수동 자동
-    ##   LPG       3    4
-    ##   가솔린   12   40
-    ##   디젤     17   26
-
-``` r
-table(car_price$종류, car_price$연료, car_price$변속기)
-```
-
-    ## , ,  = 수동
     ## 
-    ##         
-    ##          LPG 가솔린 디젤
-    ##   대형     3      0    8
-    ##   소형     0      7    2
-    ##   준중형   0      5    5
-    ##   중형     0      0    2
+    ##  Welch Two Sample t-test
     ## 
-    ## , ,  = 자동
+    ## data:  가격 by 하이브리드
+    ## t = -0.66632, df = 2.9427, p-value = 0.5537
+    ## alternative hypothesis: true difference in means is not equal to 0
+    ## 95 percent confidence interval:
+    ##  -1732.508  1138.084
+    ## sample estimates:
+    ## mean in group 0 mean in group 1 
+    ##        2494.121        2791.333
+
+``` r
+# t-test
+t.test(가격 ~ 변속기, data = car_price, 
+       alternative = c("two.sided"), # c("two.sided", "less", "greater"),
+       var.equal = FALSE, 
+       conf.level = 0.95)
+```
+
     ## 
-    ##         
-    ##          LPG 가솔린 디젤
-    ##   대형     3     12    9
-    ##   소형     0     13    2
-    ##   준중형   1      7    7
-    ##   중형     0      8    8
+    ##  Welch Two Sample t-test
+    ## 
+    ## data:  가격 by 변속기
+    ## t = -3.6938, df = 84.589, p-value = 0.0003908
+    ## alternative hypothesis: true difference in means is not equal to 0
+    ## 95 percent confidence interval:
+    ##  -1530.7991  -459.4402
+    ## sample estimates:
+    ## mean in group 수동 mean in group 자동 
+    ##           1819.938           2815.057
+
+위 내용을 더 설명하는 것은 아무래도 본 회귀를 설명하는데 있어 벗어난다고 판단하여 이에 대한 자세한 설명은 검정 파트에서 마저
+진앵하고 여기서는 regression 모델을 더 살펴 보도록 한다.
+
+# 이상치와 결측치 해결 방법
+
+## 1\. 결측치 해결 방법
+
+결측 치를 해결하기 위해서는 결측치가 어떤 유형의 결측치인지 분석할 필요가 있다. 결측치는 크게 완전 무작위 결측(MCAR :
+Missing completely at random), 무작위 결측(MAR : Missing at random), 비 무작위
+결측(MNAR : Missing at not random) 세가지 유형으로 구분되어진다.
+
+첫번째로 완전 무작위 결측은 어떤 데이터와도 무관하고 그냥(이유를 알수 없이) 발생하는 경우로, 데이터 입력의 오류 등으로 인해
+발생하는 일반적으로 사람들이 생각하는 결측치를 뜻합니다. 두번째로 무작위 결측치는 특정 변수와 관련하여 발생하지만 결과가 이와
+무관한 경우를 뜻합니다. 조금 설명이 애매할수 있는데, 설문을 진행하는 경우 어르신들의 경우 상대적으로 젊은 사람들보다 화장품
+관련 설문에 응할 확률이 적은 것과 같은 상황을 뜻합니다. 설문에 응한사람이 적다고 해서 화장품을 싫어하기 때문은
+아닐테니까요.(물론 다른 경우도 있을수 있습니다.) 마지막으로 비무작위 결측은 특별한 변수와 연관되어 있는
+경우로 임의로 일어나는 경우로 취업준비생이나 무직의 경우 취업 유무에 대해 해당 란을 공란으로 두는 것과 같은
+경우입니다.
+
+각각에 따라서 결측치를 채우는 방법이 조금씩 달라질수 있고, 이를 통해 어떤 경우는 결측값을 유추하는 것도 가능하기 때문에 이를
+살펴 보는 것은 중요합니다.
+
+다음으로 결측치를 처리하는 방법에 대해서 살펴 보겠습니다. 결측치를 처리하는 방법은 크게 세가지 방법이 존재합니다. 첫번째는 해당
+변수를 포함하는 레코드를 삭제하는 방법으로 데이터가 많고, 결측치의 비율이 적은 경우에 사용가능한 방법입니다. 만약 데이터가
+적은데 이렇게 결측치를 처리하게 된다면 데이터가 부족해서 모델 자체의 신뢰도가 떨어질 가능성이 있습니다. 두번째 방법은
+평균, 중앙 , 최반값과 같은 대표 값으로 데이터를 대체 하는 방법입니다. 이 경우도 결측치의 비율이 매우 높다면 문제가
+발생합니다. 따라서 결측치 비율이 적은 경우 사용가능합니다. 만약 특정 변수가 결측치가 80% 이상이라면 어떻게
+해야할까요? 이때는 결측치를 채워서 모델을 만들기 보다 결측치가 많은 해당 변수를 제거하거나 해당 변수가 존재하고 안하는지를
+변수로 만들어 살펴 보는 것이 오히려 모델의 신뢰도를 높일수 있습니다. 마지막으로 세번째 방법은 가장 어렵지만, 가장
+합리적인 다중 대체법입니다. 다중대체법은 결측치를 나머지 데이터로 예측하여 채우는 방법입니다. Mice, Amelia ,
+MissForest, Hmisc 등의 패키지에서 함수를 지원합니다. 방법은 다소 복잡하나 지원하는 라이브러리에 편한 사용법이
+있으니 이를 활용하는게 가장 좋은 방법입니다.
+
+![그림예제](C:/Users/afeve/Documents/Tutorials/Regression/Car_Price/multiple_imputation.png)
+위 그림이 multiple imputation의 기본적인 구조를 뜻합니다.
+
+결측치를 채우는 과정은 데이터에 임의로 결측치를 포함시킨뒤에 수행해보겠습니다.
+
+## 2\. 이상치
+
+이상치 outlier는 정상 범주에서 크게 벗어나는 값으로 크게 두가지로 분류할 수 있습니다. 첫 번째는 존재할수 없는 값으로
+예를 들어 나이의 경우 -1과 같이 음수의 값이 존재한다던가 성별의 경우 남:1, 여:2인 경우에 범주 바깥의 3,4와
+같은 값이 존재하는 경우입니다. 두번째 이상치는 극단적인 값으로 매우 드물게 존재하는 케이스입니다. 예를 들어 어느 특정
+학교의 학생들의 재산 수준을 조사하는데, 해당 반에 나머지 아이들은 모두 중산층인데 빌게이츠의 아들이 포함되어 있는
+경우입니다. 이 경우에 재산을 조사하는데 빌게이츠의 아들은 벌써 상속 받은 재산이 상당히 있다면 이로 인해 해당
+반의 평균이 매우 올라가고, 분산이 크게 나타날 것이기 때문에 이를 포함하면 예측 모델을 만든다고 해도 모델의 정확도가 매우
+떨어질 겁니다.
+
+그럼 이상치를 판단하는 방법에 대해 설명하겠습니다. 이상치를 탐색하는 방법은 데이터에 따라서 매우 다양하고, 해당 데이터가 속한
+도메인 지식이 상당히 필요합니다. 따라서 이는 데이터를 다루며 그때그때 가능한 이야기를 진행하도록 하겠습니다. 여기서는 이러한
+내용 보다는 통계적인 기법으로 이상치라 판단하는 방법들에 대하여 살펴보기로 하죠. 크게 이상치를 판단하는 방법은 변수의 개수에
+따라서 일변량, 이변량, 다변량 등으로 나눌수 있습니다.
+
+저는 첫 번째로, 먼저 일변량 데이터에서 이상치를 판단하는 방법을 살펴봅니다. 가장 기본적인 방법은
+IQR(Interquartile Range)을 활용하는 것입니다. 위에서 그려봤던 상자그림과 해당하는 값을 통해서 이를 추출하는
+방법으로 데이터가 정규분포를 그린다고 자정하였을때 사용될 수 있다.(모든 통계 이론과 앞으로의 내용에서 정규성을 판단하는 일은
+계속해서 있을정도로 매우 중요한 가정이다.) IQR을 활용해 이상치를 판단하는 순서는 다음과 같다.
+
+1)  먼저 box-plot을 그려본다. 이때 boxplot에서 상자그림의 값을 벗어나 점으로 표시된 값들이 IQR 로 판단하는
+    이상치이다.
+
+<!-- end list -->
+
+``` r
+box1 <- ggplot(car_price, aes(가격) )+
+   geom_boxplot(fill='blue',color='black',width=0.5)+
+   stat_summary(fun.y="mean", geom="point", shape=22, size=3, fill="red") # 평균추가
+```
+
+2)  IQR 을 구한다. IQR은 quantile 값을 통해서 구해지며 upper Quantile- lower
+    Quantitle을 뜻한다. 이상치를 판단하는 상한 값은 upper, 하한값을 판단하는 값은 lower로 각각
+    1사분위수와 3사분위수에서 IQR\*1.5 벗어나는 값을 이상치 경계로 한다.
+
+<!-- end list -->
+
+``` r
+IQR= quantile(car_price$가격)[4] - quantile(car_price$가격)[2]
+upper= quantile(car_price$가격)[4] + IQR*1.5
+lower= quantile(car_price$가격)[2] - IQR*1.5
+```
+
+3)  이상치 경계 상한값보다 크거나 하한값보다 작으면 이상치로 판단한다.
+
+<!-- end list -->
+
+``` r
+upperOutlier = car_price$가격[ which( car_price$가격 > upper) ]
+lowerOutlier = car_price$가격[ which( car_price$가격 < lower) ]
+```
+
+출처: Tukey, John W. “Exploratory data analysis.” (1977): 2-3.
+
+보통은 위 과정을 아래 함수를 사용해서 사용함.
+
+``` r
+isnt_out_tukey <- function(x, k = 1.5, na.rm = TRUE) {
+   quar <- quantile(x, probs = c(0.25, 0.75), na.rm = na.rm)
+   iqr <- diff(quar)
+   (quar[1] - k * iqr <= x) & (x <= quar[2] + k * iqr)
+}
+```
+
+두 번째는 z-score를 활용하는 방법으로 데이터가 평균으로 부터 분산의 몇배 만큼 벗어나 있는지를 기준으로 이상치로 판단하는
+것이다. 여기서 얼마나가 중요한데, 일반적으로 가장 선호되는 값은 3 으로 알려져있다. 그 이유는 정규 분포의 평균을 기준으로
+하였을 때 평균을 중심으로 3시그마의 값을 기준으로 삼으면 전체 데이터의 약 0.3 퍼센트의 값만을 나타내기 때문이다. 정규분포를
+하는 경우 이 값을 작게 하다보면 실제로 해당 데이터가 이상치가 아님에도 이상치로 판단하는 경우가 생길수 있다.
+
+이에 대한 그림은 다음과 같다.  
+![그림예제](C:/Users/afeve/Documents/Tutorials/Regression/Car_Price/distribution.jpg)
+
+1)  먼저 histogram을 그려본다. 이때 histogram에서 대략 어느정도 벗어나는 값들을 이상치로 판단할지 값을
+    정한다.
+
+<!-- end list -->
+
+``` r
+p4<-ggplot(car_price, aes(x=가격, y=..density..)) + 
+   geom_histogram(binwidth=1, fill = "blue", colour="white", alpha=0.5) + 
+   geom_density(fill = NA, colour=NA, alpha=0.8) + 
+   geom_line(stat="density") + 
+   expand_limits(y=0) + 
+   ggtitle("Histogram + Kernel Density Curve")
+```
+
+2)  평균값과 표준편차 값을 구한다.
+
+<!-- end list -->
+
+``` r
+zmean= mean(car_price$가격, na.rm=T)
+zsd= sd(car_price$가격, na.rm=T)
+```
+
+3)  위에서 구한 값들을 활용하여 이상치를 판단한다.
+
+<!-- end list -->
+
+``` r
+upperOutlier = car_price$가격[ which( car_price$가격 > zmean+3*zsd) ]
+lowerOutlier = car_price$가격[ which( car_price$가격 < zmean-3*zsd) ]
+```
+
+보통은 위 과정을 아래 함수를 사용해서 사용함.
+
+``` r
+isnt_out_z <- function(x, thres = 3, na.rm = TRUE) {
+  abs(x - mean(x, na.rm = na.rm)) <= thres * sd(x, na.rm = na.rm)}
+```
+
+세번째는 위 표준화 점수에서 사용된 평균을 중앙값으로 대체한 형태로 보통 데이터네 매우 극단적인 이상치가 존재하면, 평균값이
+편향되어 잘못된 이상치 판단이 될수 있는데 중앙값으로 이를 대체하면 상대적으로 이러한 문제로 부터 자유로워진다. 따라서
+이를 좀더 강건한 z-score라 부르기도 한다.
+
+순서는 위와 거의 동일하지만 여기서는 평균대신 중앙값을 표준편차 대신 mad 값을 사용한다. mad는 표준편차에서 단순히 중앙값을
+사용해서 구한값이 아니다. 중위수 절대편차라고 해서, 중앙값을 구하고 모든 데이터와 중앙값 간의 절대 차를 구한 뒤 이 결과의
+중앙값이 mad이다.
+
+``` r
+isnt_out_mad <- function(x, thres = 3, na.rm = TRUE) {
+  abs(x - median(x, na.rm = na.rm)) <= thres * mad(x, na.rm = na.rm)
+}
+```
+
+위에서는 세 가지 일변량 데이터의 이상치 탐지 방법에 대해서 살펴 보았다. 이제 이변량 데이터의 이상치 탐지 방법에 관하여
+살펴보자. 이변량 분포는 보통 산점도 그래프를 통해서 살펴 볼수 있는데 mvoutlier 라이브러리의
+corr.plot()함수를 통해 outlier을 찾아볼수 있다. 이 방법은 산포도를 이용하여 독립변수와 종속변수의 관계를
+테스트하여 특정 신뢰구간에 포함되지 않은 표본을 이상치로 판단하는 방법이다. 사용되는 옵션으로 quan은
+표본비율, alpha는 원의 크기를 결정한다.
+
+``` r
+library(mvoutlier)
+a<-mvoutlier::corr.plot(car_price$연비, car_price$가격, quan=1, alpha=0.05) #quan:표본 비율, #alpha:유의수준
+```
+
+<img src="car_price_files/figure-gfm/unnamed-chunk-78-1.jpeg" style="display: block; margin: auto;" />
+
+다음으로 이와 비슷하지만 bagplot을 이용하는 방법이 있다. 모양은 산점도와 같은데, 이상치를 판단하는 기준이 위와 다르다.
+깊이 중위수(depth median)이 중심이 되며, n/2의 데이터가 가운데 “가방(bag)”에 몰려있고, 가방을 3배
+확장하여 펜스(fence)를 두르고 그 밖에 위치한 점은 이상점으로 별도로 표시한다.
+
+``` r
+library(aplpack)
+car_bagplot<-aplpack::bagplot(car_price$연비, car_price$가격, xlab="qsec", ylab="mpg", show.outlier= TRUE,
+             show.looppoints=TRUE,
+             show.bagpoints=TRUE,dkmethod=2,
+             show.whiskers=TRUE,show.loophull=TRUE,
+             show.baghull=TRUE,verbose=FALSE)
+```
+
+<img src="car_price_files/figure-gfm/unnamed-chunk-79-1.jpeg" style="display: block; margin: auto;" />
+
+``` r
+car_outlier <- as.data.frame(car_bagplot$pxy.outlier)
+names(car_outlier) <- c("연비", "가격")
+
+cars_outliers <- left_join(car_outlier, car_price)
+
+cars_outliers
+```
+
+    ##   연비  가격 년식 종류 마력 토크   연료 하이브리드 배기량 중량 변속기
+    ## 1  8.1 11150 2015 대형  416 52.0 가솔린          0   5038 2065   자동
+    ## 2  7.4 14570 2015 대형  416 52.0 가솔린          0   5038 2145   자동
+    ## 3  8.9  6910 2015 대형  334 40.3 가솔린          0   3778 1915   자동
+
+출처: <https://statkclee.github.io/ml/ml-detect-outliers.html>
+
+마지막으로 다변량 데이터에서 이상치를 판단하는 방법에 대하여 살펴보자.
+
+마할로노비스(mahalanobis) D2 값을 이용, D2 /df가 2.5\~4 이상인 표본(표본수에 따라 기준은 달라짐)
+
+``` r
+library(chemometrics)
+mah <-car_price%>%dplyr::select(가격, 연비, 토크, 마력, 배기량, 중량)%>% chemometrics::Moutlier(quantile = 0.99)
+```
+
+<img src="car_price_files/figure-gfm/unnamed-chunk-81-1.jpeg" style="display: block; margin: auto;" />
+
+``` r
+mah
+```
+
+    ## $md
+    ##   [1] 1.3334566 3.4033999 1.6483152 1.3845990 2.6084509 1.9433853 1.6921246
+    ##   [8] 1.7766227 3.7212438 1.8055949 1.7727006 3.9818541 1.6177572 2.3473921
+    ##  [15] 1.9114612 2.3441771 2.3441771 2.1120933 2.0930713 2.5785307 2.4431650
+    ##  [22] 1.1873192 2.3718299 3.4134983 2.1415518 2.4011886 2.4678035 1.6630730
+    ##  [29] 1.6379388 1.5975577 0.8598066 2.0693661 3.1014759 2.3428010 2.4566356
+    ##  [36] 2.8509368 1.2097839 2.4358912 1.8362605 1.4031628 1.6658702 1.9373059
+    ##  [43] 2.6283853 2.7317474 2.3015121 1.3390325 1.5310946 2.8519896 1.7955197
+    ##  [50] 2.4525112 1.3657049 1.1406191 2.9103219 1.5124063 1.1874009 2.3795718
+    ##  [57] 1.8008165 1.7880966 3.4102781 1.7905389 1.5336072 4.3087531 2.4378585
+    ##  [64] 1.7900112 5.2038016 1.6261739 2.8531804 1.9665659 1.6879126 4.7702256
+    ##  [71] 1.7835080 2.3473921 1.9504404 2.0312008 2.3956325 2.4431650 2.1256420
+    ##  [78] 1.5278951 3.3358255 1.9085314 2.8077742 1.0677605 3.1191848 2.0957476
+    ##  [85] 1.3514268 2.0131057 2.4826211 1.6945735 1.8031850 1.7950553 3.3767318
+    ##  [92] 1.6429500 1.3981378 7.8854650 1.2258928 2.8086862 1.1961468 2.6737975
+    ##  [99] 2.8734079 2.6084509 2.1387345 1.7889850
+    ## 
+    ## $rd
+    ##   [1]  2.1637873 10.4239891  1.1540583  2.2615727 11.1749552  1.5530285
+    ##   [7]  1.3457613  1.3864425  9.5760057  1.4438893  1.8944058  6.7412111
+    ##  [13]  1.5399105 10.5579981  1.4045114 11.1099294 11.1099294  9.6955793
+    ##  [19]  1.8897647 13.3944660 10.5450303  4.4238659  2.1386495 12.1154959
+    ##  [25]  2.2236842  2.4269646  2.2399921  1.1107712  1.0294346  2.1665706
+    ##  [31]  4.4128457  7.6436977 15.3575080 10.7288832  2.1590436 15.5507656
+    ##  [37]  2.0676341 10.7153022  2.4197445  2.0364206  1.1073427  1.5376634
+    ##  [43] 11.3307110  7.5401165 11.9227228  2.4190601  0.9171296 13.6254840
+    ##  [49]  1.9054937  2.1259110  3.0588826  2.0708304 10.1094865  1.4058714
+    ##  [55]  2.2266729 11.2700931  1.5790316  1.6107108 12.0851149  5.6096434
+    ##  [61]  1.5017045  8.7547365  2.1110660  5.8746795 32.2809506  0.9899778
+    ##  [67]  8.6509160  1.4742641  1.6452975  6.1053645  2.6013311 10.5579981
+    ##  [73]  1.4376393  2.0653574 11.9676233 10.5450303  2.0260851  1.4723770
+    ##  [79] 15.4178292  1.9628956  6.4196335  2.0942977  8.9626389  1.7359443
+    ##  [85]  1.3984825  9.4946099  1.9788243  1.7517753  1.3719735  1.3877483
+    ##  [91] 10.4191037  1.1789758  2.1095771 41.7142295  2.0677252  6.3834654
+    ##  [97]  2.0452411 15.9715726 12.2700116 11.1749552  2.7572062  1.6414856
+    ## 
+    ## $cutoff
+    ## [1] 4.100231
+
+``` r
+which(mah$md > mah$cutoff)
+```
+
+    ## [1] 65 94
+
+``` r
+which(mah$rd > mah$cutoff)
+```
+
+    ## [1] 18 20 48 65 86 94 98
 
 -----
 
