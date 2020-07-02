@@ -191,18 +191,7 @@ summary(car_price, digits=3)
 
 위 과정이 끝나면 데이터에 대한 계략적인 이해를 할수 있다. 하지만, 이를 통해 얻을수 있는 정보는 제한적이기 때문에 각 변수형에
 따라 추가적인 정보를 알아볼 필요가 있다. 일반적으로 연속형 변수, 범주형 변수는 다르기 때문에 이에 해당하는 변수명을 먼저
-구하고 추가적인 분석을 진행한다. 아래 code는 데이터내 숫자형 변수인지를 컬럼별로 체크하여 이에 해당하는 컬럼의
-이름과 순서 값을 체크하고 그중 이름만을 반환하는 함수이다.
-
-``` r
-num_var<- which(sapply(car_price,is.numeric ))  %>% names() 
-```
-
-위 결과 중에, hybrid는 0과 1 값만을 가지는 것으로 보이며 이는 숫자형이라기 보다는
-
-``` r
-num_var<- num_var[!num_var %in% c('하이브리드')]
-```
+구하고 추가적인 분석을 진행한다.
 
 문자형 변수인지를 확인한다. 현재는 모든 범주형 변수가 character로 나와 있기 때문에 character변수들을
 factor로 변환한 후에 진행한다. (factor형은 R에서만 가지는 고유한 자료형이다.) 여기서 사용한 apply함수는
@@ -217,11 +206,29 @@ chr_var
     ## [1] "종류"   "연료"   "변속기"
 
 ``` r
-car_price[ ,chr_var]<-lapply(car_price %>% select(chr_var), factor)
+car_price[ ,chr_var]<-lapply(car_price %>% dplyr::select(chr_var), factor)
 ```
 
 ``` r
-car_price$하이브리드<-as.factor(car_price$하이브리드)
+table(car_price$종류)
+```
+
+    ## 
+    ##   대형   소형 준중형   중형 
+    ##     35     24     25     18
+
+하이브리드 변수는 0과 1값만을 가지는 factor 변수이고, 년식과 종류는 순서값을 가지는 서열척도의 범주형 변수이다. 따라서
+세 변수를 숫자형 변수가 아니라 factor 형 변수로 변환한다. 사실 순서형 변수의 경우 그 값을 연속형 변수로 사용
+가능하기도 하다. 데이터 특성에 따라 구분이 필요하기는 하나 값의 크기가 중요하다면 연속형 변수로, 순서만 관계가
+있고 변수의 범주가 작다면 factor형으로 쓰는게 합리적이다.
+
+``` r
+car_price$하이브리드<- car_price$하이브리드%>% as.character() %>% as.factor()
+```
+
+``` r
+car_price$종류<- factor(car_price$종류, levels=c('소형','준중형', '중형', '대형'), ordered=T)
+car_price$년식<- factor(car_price$년식, ordered=T)
 ```
 
 변수를 factor형으로 바꾼후에 factor 헝변수의 이름을 따로 저장한다. 이유는 위에서 언급했던 것처럼 연속형 변수와 범주형
@@ -234,19 +241,29 @@ fact_var
 
     ## [1] "종류"       "연료"       "하이브리드" "변속기"
 
+아래 code는 데이터내 숫자형 변수인지를 컬럼별로 체크하여 이에 해당하는 컬럼의 이름과 순서 값을 체크하고 그중 이름만을
+반환하는 함수이다.
+
+``` r
+num_var<- which(sapply(car_price,is.numeric ))  %>% names() 
+num_var
+```
+
+    ## [1] "가격"   "연비"   "마력"   "토크"   "배기량" "중량"
+
 ## 수치형 변수의 경우
 
 수치형 변수는 크게 실수형과 정수형으로 구분되며, 어떤 데이터의 경우에 정수형 데이터가 수량이 아니라 단순 구분을 위해서 입력된
 값인 경우에 위에서 character변수를 factor로 바꾼것처럼 factor형 변수로 사용되기도 한다. 정수형임에도 정수의
 범위가 매우 한정적이고, 순서를 가지지 않는 경우 이를 factor 형으로 사용한다.
 
-수치형 변수는 크게 대표값과 상자 그림, 히스토그램 등을 통해서 변수별 분포를 살펴본다. 먼저 대표값을 수치로 확인하기 위해서
-사용되는 함수는 위에서 설명했던 summary()함수가 있는데, 이는 R base에서 기본적으로 제공되는 함수이며,
-제공하는 값이 Qunatile(분위수) 정도 밖에 없어서 데이터가 부족하다. 따라서 대안으로 사용될수 있는 함수는
-psych패키지의 describe()함수와 pastecs 패키지의 stat.desc(cars)함수를 주로 사용한다. 개인적으로는
+수치형 변수는 대표값과 상자 그림, 히스토그램 등을 통해서 변수별 분포를 살펴볼수 있다. 대표값을 수치로 확인하기 위해서 사용되는
+함수는 위에서 설명했던 summary()함수가 있는데, 이는 R base에서 기본적으로 제공되는 함수이며, 제공하는 값이
+Qunatile(분위수) 정도 밖에 없어서 데이터가 부족하다. 따라서 대안으로 사용될수 있는 함수는 psych패키지의
+describe()함수와 pastecs 패키지의 stat.desc(cars)함수를 주로 사용한다. 개인적으로는
 describe()함수를 선호하는 편이지만 더 많은 정보를 제공하는 함수는 stat.desc(cars)함수이다. 이때 주의할
-사항은 숫자형 변수를 지정한 상태로 함수의 인자로 넣어야 한다. 만약 그렇지 않다면 describe()함수의 경우는
-오류가 발생한다.
+사항은 숫자형 변수를 지정한 상태로 함수의 인자로 넣어야 한다. 만약 그렇지 않다면 describe()함수의 경우는 오류가
+발생한다.
 
   - 해당 옵션은 숫자가 지수로 보이는 것을 방지한다.
   - r options(scipen = 10)
@@ -254,20 +271,18 @@ describe()함수를 선호하는 편이지만 더 많은 정보를 제공하는 
 <!-- end list -->
 
 ``` r
-psych::describe(car_price %>% select(num_var)) %>% round(3)
+psych::describe(car_price %>% dplyr::select(num_var)) %>% round(3)
 ```
 
     ##        vars   n    mean      sd  median trimmed    mad    min   max   range
     ## 가격      1 102 2502.86 1837.27 2007.00 2178.93 822.84  870.0 14570 13700.0
-    ## 년식      2 102 2014.51    1.13 2015.00 2014.83   0.00 2010.0  2015     5.0
-    ## 연비      3 102   12.37    3.17   12.60   12.36   2.74    6.3    19    12.7
-    ## 마력      4 102  176.45   64.06  170.00  167.62  44.48   95.0   416   321.0
-    ## 토크      5 102   29.44   11.99   27.75   29.17  18.75   12.7    52    39.3
-    ## 배기량    6 102 2149.07  723.80 1999.00 2040.16 611.57 1368.0  5038  3670.0
-    ## 중량      7 102 1564.08  376.56 1587.50 1557.23 515.20 1035.0  2383  1348.0
+    ## 연비      2 102   12.37    3.17   12.60   12.36   2.74    6.3    19    12.7
+    ## 마력      3 102  176.45   64.06  170.00  167.62  44.48   95.0   416   321.0
+    ## 토크      4 102   29.44   11.99   27.75   29.17  18.75   12.7    52    39.3
+    ## 배기량    5 102 2149.07  723.80 1999.00 2040.16 611.57 1368.0  5038  3670.0
+    ## 중량      6 102 1564.08  376.56 1587.50 1557.23 515.20 1035.0  2383  1348.0
     ##         skew kurtosis     se
     ## 가격    4.01    20.67 181.92
-    ## 년식   -2.33     4.39   0.11
     ## 연비   -0.03    -0.63   0.31
     ## 마력    1.44     2.55   6.34
     ## 토크    0.15    -1.40   1.19
@@ -278,39 +293,24 @@ pastecs 패키지의 stat.desc(cars)함수를 사용하는 것이 좋아보인�
 거의 모든 정보를 제공한다.
 
 ``` r
-pastecs::stat.desc(car_price%>% select(num_var)) %>% round(3)
+pastecs::stat.desc(car_price%>% dplyr::select(num_var)) %>% round(3)
 ```
 
-    ##                     가격       년식     연비      마력     토크     배기량
-    ## nbr.val          102.000    102.000  102.000   102.000  102.000    102.000
-    ## nbr.null           0.000      0.000    0.000     0.000    0.000      0.000
-    ## nbr.na             0.000      0.000    0.000     0.000    0.000      0.000
-    ## min              870.000   2010.000    6.300    95.000   12.700   1368.000
-    ## max            14570.000   2015.000   19.000   416.000   52.000   5038.000
-    ## range          13700.000      5.000   12.700   321.000   39.300   3670.000
-    ## sum           255292.000 205480.000 1261.500 17998.000 3003.300 219205.000
-    ## median          2007.000   2015.000   12.600   170.000   27.750   1999.000
-    ## mean            2502.863   2014.510   12.368   176.451   29.444   2149.069
-    ## SE.mean          181.917      0.112    0.314     6.342    1.187     71.667
-    ## CI.mean.0.95     360.874      0.222    0.624    12.582    2.356    142.168
-    ## var          3375551.446      1.282   10.083  4103.003  143.818 523890.837
-    ## std.dev         1837.267      1.132    3.175    64.055   11.992    723.803
-    ## coef.var           0.734      0.001    0.257     0.363    0.407      0.337
-    ##                    중량
-    ## nbr.val         102.000
-    ## nbr.null          0.000
-    ## nbr.na            0.000
-    ## min            1035.000
-    ## max            2383.000
-    ## range          1348.000
-    ## sum          159536.000
-    ## median         1587.500
-    ## mean           1564.078
-    ## SE.mean          37.285
-    ## CI.mean.0.95     73.964
-    ## var          141799.103
-    ## std.dev         376.562
-    ## coef.var          0.241
+    ##                     가격     연비      마력     토크     배기량       중량
+    ## nbr.val          102.000  102.000   102.000  102.000    102.000    102.000
+    ## nbr.null           0.000    0.000     0.000    0.000      0.000      0.000
+    ## nbr.na             0.000    0.000     0.000    0.000      0.000      0.000
+    ## min              870.000    6.300    95.000   12.700   1368.000   1035.000
+    ## max            14570.000   19.000   416.000   52.000   5038.000   2383.000
+    ## range          13700.000   12.700   321.000   39.300   3670.000   1348.000
+    ## sum           255292.000 1261.500 17998.000 3003.300 219205.000 159536.000
+    ## median          2007.000   12.600   170.000   27.750   1999.000   1587.500
+    ## mean            2502.863   12.368   176.451   29.444   2149.069   1564.078
+    ## SE.mean          181.917    0.314     6.342    1.187     71.667     37.285
+    ## CI.mean.0.95     360.874    0.624    12.582    2.356    142.168     73.964
+    ## var          3375551.446   10.083  4103.003  143.818 523890.837 141799.103
+    ## std.dev         1837.267    3.175    64.055   11.992    723.803    376.562
+    ## coef.var           0.734    0.257     0.363    0.407      0.337      0.241
 
 다음으로 각 변수별 히스토그램과 커널 밀도 곡선을 통해 분포를 살펴본다. 물론 위에서 구한 수치로 이를 어느정도 알수 있지만 시각
 정보가 이를 더 명확하게 보여주고, 어느 때는 더 많은 정보를 보여주기 때문에 함께 살펴 보아야 한다.
@@ -325,16 +325,7 @@ p1<-ggplot(car_price, aes(x=가격, y=..density..)) +
 ```
 
 ``` r
-p2<-ggplot(car_price, aes(x=년식, y=..density..)) + 
-   geom_histogram(binwidth=1, fill = "blue", colour="white", alpha=0.5) + 
-   geom_density(fill = NA, colour=NA, alpha=0.8) + 
-   geom_line(stat="density") + 
-   expand_limits(y=0) + 
-   ggtitle("Histogram + Kernel Density Curve")
-```
-
-``` r
-p3<-ggplot(car_price, aes(x=중량, y=..density..)) + 
+p2<-ggplot(car_price, aes(x=중량, y=..density..)) + 
    geom_histogram(binwidth=50, fill = "blue", colour="white", alpha=0.5) + 
    geom_density(fill = NA, colour=NA, alpha=0.8) + 
    geom_line(stat="density") + 
@@ -343,7 +334,7 @@ p3<-ggplot(car_price, aes(x=중량, y=..density..)) +
 ```
 
 ``` r
-p4<-ggplot(car_price, aes(x=연비, y=..density..)) + 
+p3<-ggplot(car_price, aes(x=연비, y=..density..)) + 
    geom_histogram(binwidth=1, fill = "blue", colour="white", alpha=0.5) + 
    geom_density(fill = NA, colour=NA, alpha=0.8) + 
    geom_line(stat="density") + 
@@ -352,7 +343,7 @@ p4<-ggplot(car_price, aes(x=연비, y=..density..)) +
 ```
 
 ``` r
-p5<-ggplot(car_price, aes(x=마력, y=..density..)) + 
+p4<-ggplot(car_price, aes(x=마력, y=..density..)) + 
    geom_histogram(binwidth=50, fill = "blue", colour="white", alpha=0.5) + 
    geom_density(fill = NA, colour=NA, alpha=0.8) + 
    geom_line(stat="density") + 
@@ -361,7 +352,7 @@ p5<-ggplot(car_price, aes(x=마력, y=..density..)) +
 ```
 
 ``` r
-p6<-ggplot(car_price, aes(x=토크, y=..density..)) + 
+p5<-ggplot(car_price, aes(x=토크, y=..density..)) + 
    geom_histogram(binwidth=5, fill = "blue", colour="white", alpha=0.5) + 
    geom_density(fill = NA, colour=NA, alpha=0.8) + 
    geom_line(stat="density") + 
@@ -370,7 +361,7 @@ p6<-ggplot(car_price, aes(x=토크, y=..density..)) +
 ```
 
 ``` r
-p7<-ggplot(car_price, aes(x=배기량, y=..density..)) + 
+p6<-ggplot(car_price, aes(x=배기량, y=..density..)) + 
    geom_histogram(binwidth=500, fill = "blue", colour="white", alpha=0.5) + # alpha 반투명
    geom_density(fill = NA, colour=NA, alpha=0.8) + 
    geom_line(stat="density") + 
@@ -381,12 +372,11 @@ p7<-ggplot(car_price, aes(x=배기량, y=..density..)) +
 위에서 저장한 plot을 화면 분할하여 표시
 
 ``` r
-grid.arrange(p1, p2,p3,p4,p5,p6,p7, ncol=2)
+grid.arrange(p1, p2,p3,p4,p5,p6, ncol=2)
 ```
 
 <img src="car_price_files/figure-gfm/unnamed-chunk-26-1.jpeg" style="display: block; margin: auto;" />
-
-결과 해석:
+각 변수의 히스토그램과 추정된 분포를 확인할수 있다.
 
 아래 그래프는 qqplot으로 해당 변수의 모집단 분포가 정규성을 만족하는지를 알아보기 위한 단계로 qqplot과 qqline,
 shapiro.test (Shapiro-Wilk normality test), Kolmogorov-Smirnov test등으로
@@ -560,26 +550,17 @@ grid.arrange(d1, d2, d3, d4, d5, ncol=2)
 분명한 경향을 보임에도 불구하고 상관계수는 아무런 관계가 없다고 나타내게 된다.
 
 ``` r
-correaltion<-car_price %>% select(가격, 연비, 년식, 토크, 마력, 배기량, 중량) %>% cor()
+correaltion<-car_price %>% dplyr::select(가격, 연비, 토크, 마력, 배기량, 중량) %>% cor()
 correaltion
 ```
 
-    ##              가격       연비       년식       토크       마력     배기량
-    ## 가격    1.0000000 -0.3750416  0.2883369  0.5344032  0.8683213  0.8518502
-    ## 연비   -0.3750416  1.0000000 -0.2798360 -0.2499411 -0.5042319 -0.6692783
-    ## 년식    0.2883369 -0.2798360  1.0000000  0.5078543  0.4403253  0.3964289
-    ## 토크    0.5344032 -0.2499411  0.5078543  1.0000000  0.6450841  0.6207311
-    ## 마력    0.8683213 -0.5042319  0.4403253  0.6450841  1.0000000  0.9109432
-    ## 배기량  0.8518502 -0.6692783  0.3964289  0.6207311  0.9109432  1.0000000
-    ## 중량    0.4992084 -0.7015424  0.5029223  0.7541077  0.6060561  0.7517414
-    ##              중량
-    ## 가격    0.4992084
-    ## 연비   -0.7015424
-    ## 년식    0.5029223
-    ## 토크    0.7541077
-    ## 마력    0.6060561
-    ## 배기량  0.7517414
-    ## 중량    1.0000000
+    ##              가격       연비       토크       마력     배기량       중량
+    ## 가격    1.0000000 -0.3750416  0.5344032  0.8683213  0.8518502  0.4992084
+    ## 연비   -0.3750416  1.0000000 -0.2499411 -0.5042319 -0.6692783 -0.7015424
+    ## 토크    0.5344032 -0.2499411  1.0000000  0.6450841  0.6207311  0.7541077
+    ## 마력    0.8683213 -0.5042319  0.6450841  1.0000000  0.9109432  0.6060561
+    ## 배기량  0.8518502 -0.6692783  0.6207311  0.9109432  1.0000000  0.7517414
+    ## 중량    0.4992084 -0.7015424  0.7541077  0.6060561  0.7517414  1.0000000
 
 ``` r
 correaltion %>% corrplot::corrplot(method='color', type = 'upper', diag = F, number.cex = 1, addCoef.col = 'black')
@@ -608,22 +589,6 @@ cor.test(car_price$가격, car_price$연비)
     ## sample estimates:
     ##        cor 
     ## -0.3750416
-
-``` r
-cor.test(car_price$가격, car_price$년식)
-```
-
-    ## 
-    ##  Pearson's product-moment correlation
-    ## 
-    ## data:  car_price$가격 and car_price$년식
-    ## t = 3.0113, df = 100, p-value = 0.003294
-    ## alternative hypothesis: true correlation is not equal to 0
-    ## 95 percent confidence interval:
-    ##  0.09943794 0.45717600
-    ## sample estimates:
-    ##       cor 
-    ## 0.2883369
 
 ``` r
 cor.test(car_price$가격, car_price$토크)
@@ -729,10 +694,16 @@ box4 <- ggplot(car_price, aes(변속기 ,가격) )+
    stat_summary(fun.y="mean", geom="point", shape=22, size=3, fill="red") # 평균추가
 ```
 
+``` r
+box5 <- ggplot(car_price, aes(년식 ,가격) )+
+   geom_boxplot(fill='blue',color='black',width=0.5)+
+   stat_summary(fun.y="mean", geom="point", shape=22, size=3, fill="red") # 평균추가
+```
+
 위에서 저장한 plot을 화면 분할하여 표시
 
 ``` r
-grid.arrange(box1, box2, box3, box4, ncol=2)
+grid.arrange(box1, box2, box3, box4, box5, ncol=2)
 ```
 
 <img src="car_price_files/figure-gfm/unnamed-chunk-56-1.jpeg" style="display: block; margin: auto;" />
@@ -802,6 +773,35 @@ tapply(car_price$가격, car_price$변속기, summary)
     ## $자동
     ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
     ##     870    1656    2220    2815    3271   14570
+
+``` r
+# descriptive statistics by group
+tapply(car_price$가격, car_price$년식, summary)
+```
+
+    ## $`2010`
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##     870     870     870     870     870     870 
+    ## 
+    ## $`2011`
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##    1149    1149    1210    1210    1270    1270 
+    ## 
+    ## $`2012`
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##    1164    1164    1270    1384    1270    2054 
+    ## 
+    ## $`2013`
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##    1104    1104    1104    1213    1267    1430 
+    ## 
+    ## $`2014`
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##    1111    1372    1748    1602    1861    1895 
+    ## 
+    ## $`2015`
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##    1135    1885    2250    2793    3091   14570
 
 boxplot을 통해 육안으로 이 값을 확인하였다면, 이후에는 t-검정, 분산분석 등을 통해 두 집단 간의 값의 차이가 실제로
 있는 통계적 검정을 수행할수 있다. 이때 가설은 다음과 같다. 이때 t-검정과 anova 검정의 가설이 동일하기 때문에
@@ -977,6 +977,15 @@ Missing completely at random), 무작위 결측(MAR : Missing at random), 비 �
 각각에 따라서 결측치를 채우는 방법이 조금씩 달라질수 있고, 이를 통해 어떤 경우는 결측값을 유추하는 것도 가능하기 때문에 이를
 살펴 보는 것은 중요합니다.
 
+``` r
+colSums(is.na(car_price))
+```
+
+    ##       가격       년식       종류       연비       마력       토크       연료 
+    ##          0          0          0          0          0          0          0 
+    ## 하이브리드     배기량       중량     변속기 
+    ##          0          0          0          0
+
 다음으로 결측치를 처리하는 방법에 대해서 살펴 보겠습니다. 결측치를 처리하는 방법은 크게 세가지 방법이 존재합니다. 첫번째는 해당
 변수를 포함하는 레코드를 삭제하는 방법으로 데이터가 많고, 결측치의 비율이 적은 경우에 사용가능한 방법입니다. 만약 데이터가
 적은데 이렇게 결측치를 처리하게 된다면 데이터가 부족해서 모델 자체의 신뢰도가 떨어질 가능성이 있습니다. 두번째 방법은
@@ -1071,13 +1080,15 @@ isnt_out_tukey <- function(x, k = 1.5, na.rm = TRUE) {
 <!-- end list -->
 
 ``` r
-p4<-ggplot(car_price, aes(x=가격, y=..density..)) + 
+ggplot(car_price, aes(x=가격, y=..density..)) + 
    geom_histogram(binwidth=1, fill = "blue", colour="white", alpha=0.5) + 
    geom_density(fill = NA, colour=NA, alpha=0.8) + 
    geom_line(stat="density") + 
    expand_limits(y=0) + 
    ggtitle("Histogram + Kernel Density Curve")
 ```
+
+<img src="car_price_files/figure-gfm/unnamed-chunk-75-1.jpeg" style="display: block; margin: auto;" />
 
 2)  평균값과 표준편차 값을 구한다.
 
@@ -1129,7 +1140,7 @@ library(mvoutlier)
 a<-mvoutlier::corr.plot(car_price$연비, car_price$가격, quan=1, alpha=0.05) #quan:표본 비율, #alpha:유의수준
 ```
 
-<img src="car_price_files/figure-gfm/unnamed-chunk-78-1.jpeg" style="display: block; margin: auto;" />
+<img src="car_price_files/figure-gfm/unnamed-chunk-80-1.jpeg" style="display: block; margin: auto;" />
 
 다음으로 이와 비슷하지만 bagplot을 이용하는 방법이 있다. 모양은 산점도와 같은데, 이상치를 판단하는 기준이 위와 다르다.
 깊이 중위수(depth median)이 중심이 되며, n/2의 데이터가 가운데 “가방(bag)”에 몰려있고, 가방을 3배
@@ -1144,7 +1155,7 @@ car_bagplot<-aplpack::bagplot(car_price$연비, car_price$가격, xlab="qsec", y
              show.baghull=TRUE,verbose=FALSE)
 ```
 
-<img src="car_price_files/figure-gfm/unnamed-chunk-79-1.jpeg" style="display: block; margin: auto;" />
+<img src="car_price_files/figure-gfm/unnamed-chunk-81-1.jpeg" style="display: block; margin: auto;" />
 
 ``` r
 car_outlier <- as.data.frame(car_bagplot$pxy.outlier)
@@ -1176,7 +1187,7 @@ library(chemometrics)
 mah <-car_price%>%dplyr::select(가격, 연비, 토크, 마력, 배기량, 중량)%>% chemometrics::Moutlier(quantile = 0.99)
 ```
 
-<img src="car_price_files/figure-gfm/unnamed-chunk-81-1.jpeg" style="display: block; margin: auto;" />
+<img src="car_price_files/figure-gfm/unnamed-chunk-83-1.jpeg" style="display: block; margin: auto;" />
 
 ``` r
 mah
@@ -1225,13 +1236,15 @@ mah
 which(mah$md > mah$cutoff)
 ```
 
-    ## [1] 65 94
+    ## [1] 62 65 70 94
 
 ``` r
 which(mah$rd > mah$cutoff)
 ```
 
-    ## [1] 18 20 48 65 86 94 98
+    ##  [1]   2   5   9  12  14  16  17  18  20  21  22  24  31  32  33  34  36  38  43
+    ## [20]  44  45  48  53  56  59  60  62  64  65  67  70  72  75  76  79  81  83  86
+    ## [39]  91  94  96  98  99 100
 
 다음은 LOF(Local Outlier Factor)를 활용한 방법으로 관측치의 밀도(density)를 사용해 이상치를 판단한다.
 이때 밀도는 K-nearest(최근접)방법이 기초가 되어 k 값을 통해 조정된다. 자세한 사항과 cluster에 대한 내용은 차후
@@ -1239,7 +1252,7 @@ cluster에 관해 정리할때 적도록 하겠다.
 
 ``` r
 library(DMwR)
-lof <- car_price%>% select(가격, 연비, 토크, 마력, 배기량, 중량)%>% DMwR::lofactor(k=4)
+lof <- car_price%>% dplyr::select(가격, 연비, 토크, 마력, 배기량, 중량)%>% DMwR::lofactor(k=4)
 lof
 ```
 
@@ -1281,7 +1294,7 @@ lof %>% density()
 density(lof) %>% plot()
 ```
 
-<img src="car_price_files/figure-gfm/unnamed-chunk-86-1.jpeg" style="display: block; margin: auto;" />
+<img src="car_price_files/figure-gfm/unnamed-chunk-88-1.jpeg" style="display: block; margin: auto;" />
 
 ``` r
 which(lof>5)
@@ -1318,16 +1331,16 @@ car_price <- car_price%>% mutate(z_가격 = scale(가격),
 다변량 데이터는 그래프로 나타내기 불편하여 여기서는 시각적으로 보여주기 위해서 1차적으로 2차원데이터를 두고 해보았다.
 
 ``` r
-ggplot(car_price%>% select(z_연비, z_가격)) +
+ggplot(car_price%>% dplyr::select(z_연비, z_가격)) +
    geom_point(aes(x=z_연비,y=z_가격), cex=2) +
    theme_bw()
 ```
 
-<img src="car_price_files/figure-gfm/unnamed-chunk-89-1.jpeg" style="display: block; margin: auto;" />
+<img src="car_price_files/figure-gfm/unnamed-chunk-91-1.jpeg" style="display: block; margin: auto;" />
 
 ``` r
 library(fpc)
-db <- car_price%>% select(z_가격, z_연비)%>% dbscan( eps = sqrt(4), MinPts = 5)
+db <- car_price%>% dplyr::select(z_가격, z_연비)%>% dbscan( eps = sqrt(4), MinPts = 5)
 db
 ```
 
@@ -1347,7 +1360,7 @@ db$cluster # 각 포인트 별 속한 클러스터
 
 ``` r
 library(fpc)
-db <- car_price%>% select(z_가격, z_연비, z_토크, z_마력, z_배기량, z_중량)%>% dbscan( eps = sqrt(9), MinPts = 5)
+db <- car_price%>% dplyr::select(z_가격, z_연비, z_토크, z_마력, z_배기량, z_중량)%>% dbscan( eps = sqrt(9), MinPts = 5)
 db
 ```
 
@@ -1410,7 +1423,7 @@ car_price <- car_price%>% mutate(z_가격 = scale(가격),
                                  z_배기량 = scale(배기량),
                                  z_중량 = scale(중량))
 
-psych::describe(car_price %>% select(z_가격,z_연비,z_마력,z_토크,z_배기량,z_중량)) %>% round(3)
+psych::describe(car_price %>% dplyr::select(z_가격,z_연비,z_마력,z_토크,z_배기량,z_중량)) %>% round(3)
 ```
 
     ##          vars   n mean sd median trimmed  mad   min  max range  skew kurtosis
@@ -1445,7 +1458,7 @@ car_price <- car_price%>% mutate(m_가격 = (가격-min(가격))/(max(가격)-mi
                                  m_배기량 = (배기량-min(배기량))/(max(배기량)-min(배기량)),
                                  m_중량 = (중량-min(중량))/(max(중량)-min(중량)))
 
-psych::describe(car_price %>% select(m_가격,m_연비,m_마력,m_토크,m_배기량,m_중량)) %>% round(3)
+psych::describe(car_price %>% dplyr::select(m_가격,m_연비,m_마력,m_토크,m_배기량,m_중량)) %>% round(3)
 ```
 
     ##          vars   n mean   sd median trimmed  mad min max range  skew kurtosis
@@ -1467,6 +1480,21 @@ psych::describe(car_price %>% select(m_가격,m_연비,m_마력,m_토크,m_배�
         변환이 아니라 비선형적인 변환이 일어나게 됩니다. 로그 함수와 루트함수를 그려보면 다음과 같죠. 두 함수
         모두 값이 커질수록 기울기가 줄어들기 때문에 클수록 더 작게 변형됩니다. log와 root 변환은 단순히
         scale을 조정하는 것 보다는 정규화를 목적으로 자주 사용됩니다.
+
+<!-- end list -->
+
+``` r
+car_price <- car_price%>% mutate(log_가격 = log(가격))
+
+ggplot(car_price, aes(x=log_가격, y=..density..)) + 
+   geom_histogram(binwidth=1, fill = "blue", colour="white", alpha=0.5) + 
+   geom_density(fill = NA, colour=NA, alpha=0.8) + 
+   geom_line(stat="density") + 
+   expand_limits(y=0) + 
+   ggtitle("Histogram + Kernel Density Curve")
+```
+
+<img src="car_price_files/figure-gfm/unnamed-chunk-96-1.jpeg" style="display: block; margin: auto;" />
 
 이에 대한 그림은 다음과 같다.  
 ![그림예제](C:/Users/afeve/Documents/Tutorials/Regression/Car_Price/log.jpg)
@@ -1491,7 +1519,7 @@ psych::describe(car_price %>% select(m_가격,m_연비,m_마력,m_토크,m_배�
 값의 범위를 통한 범주화
 
 ``` r
-r<-car_price %>% select(마력) %>% range()
+r<-car_price %>% dplyr::select(마력) %>% range()
 
 car_price <- car_price%>% mutate(마력_category1 =cut(마력, breaks = c(r[1],r[1]+(r[2]-r[1])*1/3 , r[1]+(r[2]-r[1])*2/3, r[2]),
                                                     include.lowest = T,
@@ -1522,20 +1550,21 @@ table(car_price$마력_category2)
     ##   소형 준중형   중형   대형 
     ##     24     27     24     27
 
-  - 2.  bining bining은 연속형 변수를 두가지 변수 값으로 표현하는 것을 뜻 합니다. 굳이 따지자면 년식를
-        기준으로 해서 2012년대 이후 이전 차량을 old car라고 표현하는게 좋을 것 같습니다.
+  - 2.  bining bining은 연속형 변수를 두 가지 변수 값으로 표현하는 것을 뜻 합니다. 앞에서 년도별 가격을
+        확인해봤을때 2014년을 기준으로 가격의 차이가 나는 것을 알수 있다. 따라서 2014년대 이전 차량을
+        old car라고 표현하는게 좋을 것 같습니다.
 
 <!-- end list -->
 
 ``` r
-car_price <- car_price%>% mutate(isntold= ifelse(년식>2010,'N','Y') )
+car_price <- car_price%>% mutate(isold= ifelse(년식>2013,'N','Y')%>% as.factor() ) 
 
-table(car_price$isntold)
+table(car_price$isold)
 ```
 
     ## 
-    ##   N   Y 
-    ## 101   1
+    ##  N  Y 
+    ## 89 13
 
 ## 차원축소
 
@@ -1559,7 +1588,7 @@ table(car_price$isntold)
 구하고 이에 부합하는 변수들을 선택해야 겠지만 실습을 위해 먼저 임의선택하여 진행하겠습니다.
 
 ``` r
-correaltion<-car_price %>% select(m_연비,m_마력,m_토크,m_배기량,m_중량) %>% cor()
+correaltion<-car_price %>% dplyr::select(m_연비,m_마력,m_토크,m_배기량,m_중량) %>% cor()
 correaltion
 ```
 
@@ -1578,7 +1607,7 @@ car_price <- car_price%>% mutate(m_연비= -m_연비  )
 ```
 
 ``` r
-correaltion<-car_price %>% select(m_연비,m_마력,m_토크,m_배기량,m_중량) %>% cor()
+correaltion<-car_price %>% dplyr::select(m_연비,m_마력,m_토크,m_배기량,m_중량) %>% cor()
 correaltion
 ```
 
@@ -1605,7 +1634,7 @@ summary(car_prcomp)
 plot(car_prcomp, type = 'l', sub='Scree plot')
 ```
 
-<img src="car_price_files/figure-gfm/unnamed-chunk-101-1.jpeg" style="display: block; margin: auto;" />
+<img src="car_price_files/figure-gfm/unnamed-chunk-104-1.jpeg" style="display: block; margin: auto;" />
 
 결과가 나왔다면 이제 몇개의 PCA를 만들어야 할지를 판단해야 합니다. 정해진 기준은 없지만 일반적으로 따르는 기준은 다음과
 같습니다.
@@ -1628,7 +1657,7 @@ PCR <- as.matrix(car_price %>% dplyr::select(m_연비,m_마력,m_토크,m_배기
 <!-- end list -->
 
 ``` r
-correaltion<-car_price %>% select(m_연비,m_마력,m_토크,m_배기량,m_중량) %>% cor()
+correaltion<-car_price %>% dplyr::select(m_연비,m_마력,m_토크,m_배기량,m_중량) %>% cor()
 correaltion
 ```
 
@@ -1790,107 +1819,322 @@ text(car_factanal$scores[,1], car_factanal$scores[,2],
      cex = 0.7, pos = 3, col = "blue")
 ```
 
-<img src="car_price_files/figure-gfm/unnamed-chunk-106-1.jpeg" style="display: block; margin: auto;" />
+<img src="car_price_files/figure-gfm/unnamed-chunk-109-1.jpeg" style="display: block; margin: auto;" />
 
-## 시그널 데이터 압축
+# Regression 예측 모델
 
------
+이제 모델 생성전에 데이터를 탐색하고 이를 토대로 예측 모델에 사용되도록 데이터를 다루는 단계가 끝났습니다. 아래에서 부터는
+regression으로 활용될수 있는 모델들을 활용해 값을 예측 모델을 생성하고 예측 오차를 평가해보고자 합니다. 일반적으로
+regression은 통계에서 회귀분석이라는 한 분야를 뜻하지만 예측 모델 내에서는 regression이라는 말이 연속형의
+종속변수 값을 다루는 모든 모델들을 뜻합니다. 여기서는 후자의 의미대로 여러 모델을 사용하여 예측 모델을 다루어
+봅니다. 먼저 통계에서 사용하는 regression 모델을 다루며 추가적으로 연속형 변수를 예측에 활용될수 있는 다양한
+모델들에 관해서 다룹니다.
 
-### 단축키
+Regression을 진행하기에 앞서 몇가지 가정이 충족되어야합니다. 보통 통계분야에서 회귀분석을 말하면 최소제곱법을 통해
+도출되는 선형 모형을 뜻합니다. 따라서 여기서는 해당 모형이 OLS 회귀 가정을 만족하는지를 알아보고 이에 맞는
+회귀분석 모델을 만들어본다. OLS(Ordinary Least Squares)는 가장 기본적인 선형 회귀 방법으로
+잔차제곱합(RSS: Residual Sum of Squares)를 최소화하는 가중치 벡터를 행렬 미분으로 구하는
+방법이다.
 
-가) chunk생성: Ctrl + Alt + I
+OLS 가정은 다음의 네가지를 뜻한다.
 
-나) knit하기: Ctrl + Shift + k
+  - 정규성: Normality라고 부르며 종속변수 혹은 잔차가 정규성을 따르다는 것을 의미한다. 테스트 방법은 위에서 일부
+    설명하였으나 보통 회귀분석시에는 회귀분석에 fitting된 모델의 QQ-plot Graph를 보고 판단한다. 보통
+    회귀계수를 만들기 위해 사용되는 변수들은 중심극한정리에 의해 정규성을 만족한다고 가정해서 사용하지만 잔차는 그렇지 않기
+    때문에 QQ-plot등을 통해 확인하는 것이다.
 
-다) 한줄 실행: Ctrl + Enter, chunk실행: Ctrl + Shift + Enter
+  - 독립성: independence라고 부르며 오차와 독립변수가 독립이어야한다. 만약 이때 상관관계가 존재한다면
+    bayesian linear regression 같은 방법을 사용해야한다.
 
-### 텍스트 작성방법
+  - 선형성: linearity라고 부르며 독립변수와 종속변수간에 선형관계가 존재한다면 잔차와 예측치 사이에 어떤 패턴이 보이면
+    안된다는 것을 의미한다.
 
-가) \#: \#을 앞에 붙이면 굵은 문자 스타일로 Viewer창에 출력된다. 많이 붙일수록 더 굵은 문자로 표기된다.
+  - 등분산성: Homoscedasticity 라고 부르며 독립변수와 무관하게 예측치와 종속변수의 오차는 분산이 일정하다는
+    가정을 뜻한다. 실제 데이터는 분산이 일정하다는 가정이 어렵지만 너무 다른경우에 문제가 된다. 오차의 평균이
+    0이고 분산이 일정한 값을 가지는 정규 분포를 따른다고 가정한다.
 
-나) —: -기호를 세 번 입력하면 줄이 표시된다.
-
-다) \*: 글머리 기호가 된다.
-
-### 표 작성 방법
-
-| 이름 | 컬럼 |
-| -- | -- |
-| K  | JH |
-| K  | EY |
-
-## 코드내장하기
-
-가) r 코드를 백틱(\`)으로 감싼다. R이 인라인 코드를 실행된 결과로 대체한다
-
-2 더하기 2는 4와 같다
-
-나) R코드 덩어리를 `{r} 으로 시작하고.` 으로 마무리한다
-
-``` r
-dim(iris)
-```
-
-    ## [1] 150   5
-
-## 화면 출력 선택 옵션
-
-knitr 선택옵션을 사용해서 코드 덩어리 출력 스타일을 적용한다. 코드 상단 괄호 내부에 선택옵션을 지정한다 Here’s
-some code
-
-가) 코드를 보여줌
+정규성 테스트
 
 ``` r
-dim(iris)
+library(car)
+fit <-lm(log_가격~ isold+종류+m_연비+m_마력+m_토크+연료+하이브리드+m_배기량+m_중량+변속기, data=car_price)
+qqPlot(fit,labels=row.names(car_price),id.method="identify",simulate=T,main="Q-Q_ plot")
 ```
 
-나) 결과를 보여줌
+<img src="car_price_files/figure-gfm/unnamed-chunk-110-1.jpeg" style="display: block; margin: auto;" />
 
-    ## [1] 150   5
+    ## [1] 94 96
 
-\#\#\#table
-
-1.  직접 입력하기
-
-| 선택옵션       | 기본설정                                      | 효과                              |
-| ---------- | ----------------------------------------- | ------------------------------- |
-| eval       | TRUE                                      | 코드를 평가하고 실행결과를 포함한다.            |
-| echo       | TRUE                                      | 실행결과와 함께 코드를 출력한다.              |
-| warning    | TRUE                                      | 경고메시지를 출력한다.                    |
-| error      | FALSE                                     | 오류메시지를 출력한다.                    |
-| message    | TRUE                                      | 메시지를 출력한다.                      |
-| tidy       | FALSE                                     | 깔끔한 방식으로 코드 형태를 변형한다.           |
-| results    | “markup” “markup”, “asis”, “hold”, “hide” |                                 |
-| cache      | FALSE                                     | 결과값을 캐쉬해서 향후 실행시 건너뛰게 설정한다.     |
-| comment    | “\#\#”                                    | 주석문자로 출력결과에 서두를 붙인다.            |
-| fig.width  | 7                                         | 덩어리로 생성되는 그래프에 대한 폭을 인치로 지정한다.  |
-| fig.height | 7                                         | 덩어리로 생성되는 그래프에 대한 높이을 인치로 지정한다. |
-
-2.  kable을 활용하기
-
-<!-- end list -->
+모든 점이 회귀선과 95%신뢰구간 안에 위치해 있어 정규성 가정을 만족한다고 할 수 있다.
 
 ``` r
-# kable(iris[1:5, ], caption = "A caption")
+residplot <- function(fit, nbreaks=10) {
+    z <- rstudent(fit)
+    hist(z, breaks=nbreaks, freq=FALSE,xlab="Studentized Residual",
+         main="Distribution of Errors")
+    rug(jitter(z), col="brown")
+    curve(dnorm(x, mean=mean(z), sd=sd(z)),add=TRUE, col="blue", lwd=2)
+    lines(density(z)$x, density(z)$y,col="red", lwd=2, lty=2)
+    legend("topright",legend = c( "Normal Curve", "Kernel Density Curve"),
+           lty=1:2, col=c("blue","red"), cex=.7)
+}
+residplot(fit)
 ```
 
-## Plots 내장하기
+<img src="car_price_files/figure-gfm/unnamed-chunk-111-1.jpeg" style="display: block; margin: auto;" />
 
-<img src="car_price_files/figure-gfm/pressure-1.jpeg" style="display: block; margin: auto;" />
+독립성은 car 패키지의 Durbin-Watson 검정을 이용하여 독립성 가정을 검정할 수 있다.
 
 ``` r
-library(knitr)
-include_graphics("https://www.tidyverse.org/images/tidyverse-default.png")
+durbinWatsonTest(fit)
 ```
 
-<div class="figure" style="text-align: center">
+    ##  lag Autocorrelation D-W Statistic p-value
+    ##    1       0.0620938      1.875347   0.488
+    ##  Alternative hypothesis: rho != 0
 
-<img src="https://www.tidyverse.org/images/tidyverse-default.png" alt="tidyverse logo"  />
+선형성은 component plus residual plot(partial residual plot) 을 그려봄으로써 확인할 수
+있다.
 
-<p class="caption">
+``` r
+crPlots(fit)
+```
 
-tidyverse logo
+<img src="car_price_files/figure-gfm/unnamed-chunk-113-1.jpeg" style="display: block; margin: auto;" /><img src="car_price_files/figure-gfm/unnamed-chunk-113-2.jpeg" style="display: block; margin: auto;" />
+이 그림에서 비선형성이 관찰된다면 회귀방법으로 적절하게 모형을 만들 수 엇다는 것을 뜻할 수 있다. 그런 경우 다항회귀를 사용하여
+curvilinear component를 추가하거나 변수를 (로그 등으로) 변환하거나 선형회귀 외에 다른 회귀 방법을 사용해야 할
+수 있다. 이 모형에서 crPlots을 보면 선형성 가정을 만족한다고 할 수 있다.
 
-</p>
+등분산성은 ncvTest()함수를 활용해 모형 적합 값에 따라 오차의 분산이 변하는지 검정해준다.
 
-</div>
+``` r
+ncvTest(fit)
+```
+
+    ## Non-constant Variance Score Test 
+    ## Variance formula: ~ fitted.values 
+    ## Chisquare = 4.233666, Df = 1, p = 0.03963
+
+``` r
+spreadLevelPlot(fit)
+```
+
+<img src="car_price_files/figure-gfm/unnamed-chunk-115-1.jpeg" style="display: block; margin: auto;" />
+
+    ## 
+    ## Suggested power transformation:  -0.9346204
+
+위 두가지를 토대로 봤을때 오차의 분산이 수평선을 벗어난다면 오차의 분산을 안정화시키기 위해서 변환을 하게 된다 이때
+Suggested power transformation이 0.5인 경우 root함수를 0인 경우 log를 사용한다.
+
+``` r
+library(car)
+library(MASS)
+
+fit <-lm(log_가격~ isold+종류+m_연비+m_마력+m_토크+연료+하이브리드+m_배기량+m_중량+변속기, data=car_price)
+summary(fit)
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = log_가격 ~ isold + 종류 + m_연비 + m_마력 + m_토크 + 
+    ##     연료 + 하이브리드 + m_배기량 + m_중량 + 변속기, data = car_price)
+    ## 
+    ## Residuals:
+    ##      Min       1Q   Median       3Q      Max 
+    ## -0.34634 -0.08227  0.00041  0.08603  0.31451 
+    ## 
+    ## Coefficients:
+    ##             Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)  6.65082    0.13200  50.384  < 2e-16 ***
+    ## isoldY      -0.02117    0.05455  -0.388 0.698837    
+    ## 종류.L       0.05181    0.07516   0.689 0.492421    
+    ## 종류.Q      -0.07220    0.03914  -1.845 0.068446 .  
+    ## 종류.C      -0.04279    0.03363  -1.272 0.206602    
+    ## m_연비      -0.62228    0.16025  -3.883 0.000199 ***
+    ## m_마력       1.67385    0.28530   5.867 7.65e-08 ***
+    ## m_토크      -0.09008    0.14238  -0.633 0.528597    
+    ## 연료가솔린  -0.03407    0.07111  -0.479 0.633008    
+    ## 연료디젤    -0.10997    0.08387  -1.311 0.193198    
+    ## 하이브리드1  0.15169    0.11640   1.303 0.195887    
+    ## m_배기량     0.36895    0.30413   1.213 0.228329    
+    ## m_중량       0.67015    0.23405   2.863 0.005241 ** 
+    ## 변속기자동   0.10792    0.03287   3.284 0.001472 ** 
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 0.1364 on 88 degrees of freedom
+    ## Multiple R-squared:  0.9312, Adjusted R-squared:  0.921 
+    ## F-statistic: 91.59 on 13 and 88 DF,  p-value: < 2.2e-16
+
+``` r
+fit2 <-lm(log_가격~ isold+종류+m_연비+m_마력+m_토크+연료+하이브리드+m_중량+변속기, data=car_price)
+summary(fit2)
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = log_가격 ~ isold + 종류 + m_연비 + m_마력 + m_토크 + 
+    ##     연료 + 하이브리드 + m_중량 + 변속기, data = car_price)
+    ## 
+    ## Residuals:
+    ##      Min       1Q   Median       3Q      Max 
+    ## -0.36529 -0.08025 -0.00049  0.08033  0.35815 
+    ## 
+    ## Coefficients:
+    ##             Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)  6.64510    0.13227  50.240  < 2e-16 ***
+    ## isoldY      -0.01890    0.05466  -0.346 0.730387    
+    ## 종류.L       0.06530    0.07453   0.876 0.383278    
+    ## 종류.Q      -0.04458    0.03192  -1.397 0.166004    
+    ## 종류.C      -0.04081    0.03368  -1.211 0.228930    
+    ## m_연비      -0.60161    0.15976  -3.766 0.000298 ***
+    ## m_마력       1.95724    0.16421  11.919  < 2e-16 ***
+    ## m_토크      -0.11112    0.14169  -0.784 0.434979    
+    ## 연료가솔린  -0.02645    0.07102  -0.372 0.710427    
+    ## 연료디젤    -0.09845    0.08355  -1.178 0.241814    
+    ## 하이브리드1  0.17512    0.11509   1.522 0.131656    
+    ## m_중량       0.72089    0.23090   3.122 0.002422 ** 
+    ## 변속기자동   0.10569    0.03290   3.212 0.001835 ** 
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 0.1368 on 89 degrees of freedom
+    ## Multiple R-squared:   0.93,  Adjusted R-squared:  0.9206 
+    ## F-statistic: 98.57 on 12 and 89 DF,  p-value: < 2.2e-16
+
+``` r
+fit3 <-lm(log_가격~ m_연비+m_마력+하이브리드+m_중량+변속기, data=car_price)
+summary(fit3)
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = log_가격 ~ m_연비 + m_마력 + 하이브리드 + m_중량 + 
+    ##     변속기, data = car_price)
+    ## 
+    ## Residuals:
+    ##      Min       1Q   Median       3Q      Max 
+    ## -0.37317 -0.08406 -0.00813  0.06829  0.32294 
+    ## 
+    ## Coefficients:
+    ##             Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)  6.69379    0.06956  96.236  < 2e-16 ***
+    ## m_연비      -0.38675    0.08184  -4.725 7.85e-06 ***
+    ## m_마력       1.98822    0.09147  21.736  < 2e-16 ***
+    ## 하이브리드1  0.32191    0.08590   3.747 0.000305 ***
+    ## m_중량       0.54740    0.07908   6.922 5.01e-10 ***
+    ## 변속기자동   0.10934    0.03156   3.465 0.000794 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 0.139 on 96 degrees of freedom
+    ## Multiple R-squared:  0.9221, Adjusted R-squared:  0.918 
+    ## F-statistic: 227.2 on 5 and 96 DF,  p-value: < 2.2e-16
+
+“최선의” 회귀모형 고르기 - AIC 값 비교:모형의 통계적 적합성 및 통계 적합에 필요한 인수의 수를 설명해 준다. AIC 값이
+적은 모형, 즉 적은 인수를 가지고 적절한 적합성을 보이는 모형이 선호된다.
+
+``` r
+AIC(fit,fit3)
+```
+
+    ##      df       AIC
+    ## fit  15 -101.9743
+    ## fit3  7 -105.2932
+
+``` r
+anova(fit,fit3)
+```
+
+    ## Analysis of Variance Table
+    ## 
+    ## Model 1: log_가격 ~ isold + 종류 + m_연비 + m_마력 + m_토크 + 연료 + 하이브리드 + 
+    ##     m_배기량 + m_중량 + 변속기
+    ## Model 2: log_가격 ~ m_연비 + m_마력 + 하이브리드 + m_중량 + 변속기
+    ##   Res.Df    RSS Df Sum of Sq      F Pr(>F)
+    ## 1     88 1.6376                           
+    ## 2     96 1.8544 -8  -0.21679 1.4562 0.1849
+
+Forward Regression 변수가 없는 모델부터 하나씩 설명변수를 추가하면서 모델의 정확도를 늘려가는 방법, 변수를
+선택하기 위해서도 많이 쓰인다. 이 외에도 backward Regression, stepwise regression
+등이 있다. 하지만 개인적인 선호로는 어느정도 활용은 하되 직접 변수를 넣어가면서 해보는게 더 좋은 모델이었다.
+
+``` r
+min.model=lm(log_가격~1,data=car_price)
+fwd.model=step(min.model,direction="forward",
+               scope=(log_가격~isold+종류+m_연비+m_마력+m_토크+연료+하이브리드+m_배기량+m_중량+변속기),trace=0)
+summary(fwd.model)
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = log_가격 ~ m_마력 + 종류 + 하이브리드 + m_연비 + 
+    ##     m_중량 + 변속기 + m_토크, data = car_price)
+    ## 
+    ## Residuals:
+    ##      Min       1Q   Median       3Q      Max 
+    ## -0.37768 -0.07029 -0.00301  0.07861  0.35997 
+    ## 
+    ## Coefficients:
+    ##             Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)  6.67203    0.11020  60.542  < 2e-16 ***
+    ## m_마력       2.05920    0.11188  18.405  < 2e-16 ***
+    ## 종류.L       0.08240    0.07056   1.168 0.245901    
+    ## 종류.Q      -0.04568    0.02967  -1.539 0.127132    
+    ## 종류.C      -0.04597    0.03176  -1.447 0.151213    
+    ## 하이브리드1  0.21786    0.10442   2.086 0.039703 *  
+    ## m_연비      -0.52123    0.14123  -3.691 0.000379 ***
+    ## m_중량       0.61847    0.20022   3.089 0.002656 ** 
+    ## 변속기자동   0.10127    0.03230   3.135 0.002307 ** 
+    ## m_토크      -0.18232    0.12636  -1.443 0.152463    
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 0.1358 on 92 degrees of freedom
+    ## Multiple R-squared:  0.9287, Adjusted R-squared:  0.9218 
+    ## F-statistic: 133.2 on 9 and 92 DF,  p-value: < 2.2e-16
+
+성능측정정
+
+``` r
+caret::postResample(pred = exp(predict(fit, car_price)), obs = car_price$가격)
+```
+
+    ##        RMSE    Rsquared         MAE 
+    ## 507.0812480   0.9369909 269.0901228
+
+``` r
+caret::postResample(pred = exp(predict(fit2, car_price)), obs = car_price$가격)
+```
+
+    ##        RMSE    Rsquared         MAE 
+    ## 546.0801089   0.9301731 276.0811143
+
+``` r
+caret::postResample(pred = exp(predict(fit3, car_price)), obs = car_price$가격)
+```
+
+    ##        RMSE    Rsquared         MAE 
+    ## 504.3905557   0.9386129 281.5123375
+
+``` r
+caret::postResample(pred = exp(predict(fwd.model, car_price)), obs = car_price$가격)
+```
+
+    ##        RMSE    Rsquared         MAE 
+    ## 549.8029365   0.9289266 278.4274669
+
+``` r
+caret::postResample(pred = mean(car_price$가격), obs = car_price$가격) #벤치마크
+```
+
+    ##     RMSE Rsquared      MAE 
+    ## 1828.239       NA 1056.770
+
+``` r
+caret::postResample(pred = median(car_price$가격), obs = car_price$가격) #벤치마크
+```
+
+    ##      RMSE  Rsquared       MAE 
+    ## 1894.2908        NA  950.9412
