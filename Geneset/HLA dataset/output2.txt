@@ -1,0 +1,37 @@
+"country"	"A"	"B"	"C"	"DP"	"DQ"	"DR"
+"Australia"	17	26	16	10	17	20
+"Brazil"	29	60	23	11	29	39
+"China"	35	67	36	41	25	47
+"Colombia"	24	34	18	3	22	35
+"Czech Republic"	15	28	16	10	24	24
+"Finland"	9	16	11	9	11	15
+"France"	17	30	19	20	22	25
+"Germany"	24	47	23	15	22	31
+"Greece"	18	31	19	14	27	26
+"Hong Kong"	14	25	14	17	29	20
+"India"	52	95	46	21	30	47
+"Iran"	34	48	23	NA	26	40
+"Israel"	42	54	26	NA	20	38
+"Italy"	23	31	19	19	26	28
+"Jamaica"	NA	NA	NA	NA	12	7
+"Kenya"	27	34	22	18	17	16
+"Malaysia"	20	38	19	13	16	23
+"Morocco"	25	37	11	NA	30	29
+"Netherlands"	14	23	16	NA	12	17
+"Nigeria"	NA	NA	NA	12	NA	2
+"Pakistan"	26	4	13	NA	5	3
+"Peru"	2	13	2	NA	13	19
+"Poland"	20	31	17	NA	22	33
+"Russia"	18	34	24	18	26	41
+"Saudi Arabia"	21	27	19	8	18	22
+"Serbia"	NA	27	NA	NA	NA	NA
+"South Africa"	34	51	32	23	24	29
+"South Korea"	15	28	15	11	30	25
+"Spain"	28	62	25	30	27	40
+"Sri Lanka"	15	22	16	13	20	16
+"Sweden"	12	16	NA	12	21	17
+"Taiwan"	15	33	17	16	23	24
+"Thailand"	15	29	15	19	24	26
+"Tunisia"	29	44	17	12	31	36
+"Turkey"	16	29	20	NA	21	26
+"USA"	60	114	27	NA	NA	NA
