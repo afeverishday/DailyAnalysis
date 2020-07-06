@@ -7,8 +7,8 @@
 
 * Statistics
 
-*1. Regression
+* 1. Regression
 
-*2. Classification
+* 2. Classification
 
-*3. Timeseries
+* 3. Timeseries
