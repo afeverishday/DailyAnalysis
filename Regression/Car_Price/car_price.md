@@ -1,7 +1,7 @@
 Regression1.Car Price
 ================
 JayHKim
-2020-07-03
+2020-07-06
 
 # Introduce
 
@@ -223,12 +223,13 @@ table(car_price$종류)
 있고 변수의 범주가 작다면 factor형으로 쓰는게 합리적이다.
 
 ``` r
-car_price$하이브리드<- car_price$하이브리드%>% as.character() %>% as.factor()
+car_price$하이브리드<- car_price$하이브리드 %>% as.factor()
 ```
 
 ``` r
 car_price$종류<- factor(car_price$종류, levels=c('소형','준중형', '중형', '대형'), ordered=T)
 car_price$년식<- factor(car_price$년식, ordered=T)
+car_price$변속기<- factor(ifelse(car_price$변속기=='자동', 0, 1))
 ```
 
 변수를 factor형으로 바꾼후에 factor 헝변수의 이름을 따로 저장한다. 이유는 위에서 언급했던 것처럼 연속형 변수와 범주형
@@ -1518,33 +1519,13 @@ library(knitr)
 include_graphics("https://raw.githubusercontent.com/afeverishday/Tutorials/master/Regression/Car_Price/log.JPG")
 ```
 
-<div class="figure" style="text-align: center">
-
-<img src="https://raw.githubusercontent.com/afeverishday/Tutorials/master/Regression/Car_Price/log.JPG" alt="식"  />
-
-<p class="caption">
-
-식
-
-</p>
-
-</div>
+<img src="https://raw.githubusercontent.com/afeverishday/Tutorials/master/Regression/Car_Price/log.JPG" style="display: block; margin: auto;" />
 
 ``` r
-include_graphics("https://raw.githubusercontent.com/afeverishday/Tutorials/master/Regression/Car_Price/root.JPG")
+include_graphics("https://raw.githubusercontent.com/afeverishday/Tutorials/master/Regression/Car_Price/root.jpg")
 ```
 
-<div class="figure" style="text-align: center">
-
-<img src="https://raw.githubusercontent.com/afeverishday/Tutorials/master/Regression/Car_Price/root.JPG" alt="식"  />
-
-<p class="caption">
-
-식
-
-</p>
-
-</div>
+<img src="https://raw.githubusercontent.com/afeverishday/Tutorials/master/Regression/Car_Price/root.jpg" style="display: block; margin: auto;" />
 
 ## 범주화
 
@@ -2198,7 +2179,8 @@ summary(fwd.model)
     ## Multiple R-squared:  0.9287, Adjusted R-squared:  0.9218 
     ## F-statistic: 133.2 on 9 and 92 DF,  p-value: < 2.2e-16
 
-성능측정 성능 측정은 다음의 방법을 통해서 RMSE, Rsquared, MAE 등을 함께 계산할수 있다.
+모델 성능측정 모델의 성능 평가는 caret package에서 제공하는 postResample()함수의 RMSE,
+Rsquared, MAE 등을 함께 계산할수 있다.
 
 ``` r
 caret::postResample(pred = exp(predict(fit, car_price)), obs = car_price$가격)
@@ -2276,13 +2258,36 @@ Regression)의 형태를 띄게 되고 비선형적인 모습을 보이게 된�
 
 구별 기준과 별개로 사용되는 목적이 더 중요하기 때문에, 이 내용은 좀더 다루어 본다.
 
-Ridge / Lasso / Elastic net regression =\> 다중공선성 문제를 해결하기 위해 사용되며, 회귀계수
-값이 커지지 않도록 패널티를 적용한 모델
+Ridge / Lasso / Elastic net regression 은 모두 기본적으로 최소제곱추정시 최소제곱 수식에 패널티
+항을 포함시켜서 만들어진다. 주로 다중공선성 문제를 해결하기 위해 사용된다. 회귀계수 값이 커지지 않도록 패널티를 적용한
+모델
+
+  - sample size \< parameter size 인 경우 Lasso 실행, L1 panelty =\> 모자란 정보를
+    늘리기 위한 과정
+  - sample size \> parameter size 인 경우 Ridge 실행, L2 panelty =\> 정보를 압축하기
+    위한 과정
+
+편의를 위해 아래 부터는 parameter 튜닝을 위해 caret package를 사용하겠습니다.
 
 ``` r
-#library(glmnet)
-#ridge.mod <- glmnet(x, y, alpha = 0, lambda = lambda)
-#lasso.mod <- glmnet(x[train,], y[train], alpha = 1, lambda = lambda)
+library(glmnet)
+car_price$하이브리드 <- car_price$하이브리드 %>% as.numeric()
+car_price$변속기 <- car_price$변속기 %>% as.numeric()
+fit_ridge <- glmnet(car_price %>% dplyr::select(m_연비, m_마력, 하이브리드, m_중량, 변속기) %>%as.matrix() , 
+                    car_price$log_가격%>%as.matrix()%>% as.numeric(), family='gaussian', alpha = 0 ) #lambda = lambda
+```
+
+``` r
+library(glmnet)
+
+fit_lasso <- glmnet(car_price%>% dplyr::select(m_연비,m_마력,하이브리드,m_중량,변속기)%>%as.matrix(), 
+                    car_price$log_가격%>%as.matrix(), family="gaussian", alpha = 1)#lambda = lambda
+```
+
+``` r
+library(glmnet)
+fit_elastic <- glmnet(car_price%>% dplyr::select(m_연비,m_마력,하이브리드,m_중량,변속기)%>%as.matrix(), 
+                    car_price$log_가격%>%as.matrix(), family="gaussian", alpha = .5)#lambda = lambda
 ```
 
 Robust / Quantile regression =\> 이상치를 해결하기 위한 목적으로 사용되며
