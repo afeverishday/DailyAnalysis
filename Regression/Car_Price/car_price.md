@@ -1,7 +1,7 @@
 Regression1.Car Price
 ================
 JayHKim
-2020-07-02
+2020-07-03
 
 # Introduce
 
@@ -536,13 +536,28 @@ grid.arrange(d1, d2, d3, d4, d5, ncol=2)
 다음으로 변수 간의 관계를 보여주는 상관계수를 살펴본다. 먼저 살펴 볼 상관계수는 일반적으로 사용하는 피어슨 상관계수로 선형적
 관계를 보여준다. 공식은 다음과 같다.
 
-![그림예제](C:/Users/afeve/Documents/Tutorials/Regression/Car_Price/correlation.jpg)
+``` r
+library(knitr)
+include_graphics("https://raw.githubusercontent.com/afeverishday/Tutorials/master/Regression/Car_Price/correlation.jpg")
+```
+
+<div class="figure" style="text-align: center">
+
+<img src="https://raw.githubusercontent.com/afeverishday/Tutorials/master/Regression/Car_Price/correlation.jpg" alt="correlation 공식"  />
+
+<p class="caption">
+
+correlation 공식
+
+</p>
+
+</div>
 
 이 값은 -1 부터 1 사이의 값을 가지며 절대값이 클수록 선형적인 관계가 크고, 0에 가까울수록 선형적인 강도가 약하다고
 판단한다. 하지만 이는 단순히 선형적인 관계만을 보여주기 때문에, 이 것만으로 두 변수의 관계를 유추하는데 무리가
 있다.따라서 산점도 그래프를 그려서 함께 살펴본다.
 
-![그림예제](C:/Users/afeve/Documents/Tutorials/Regression/Car_Price/correlation2.png)
+![그림예제](https://raw.githubusercontent.com/afeverishday/Tutorials/master/Regression/Car_Price/correlation2.png)
 
 위 숫자는 각 변수들 간의 상관계수 값을 나타낸 것이며, 각 그림은 산점도를 뜻한다. 여기서 눈 여겨 보아야 할 것은 두번째 줄에
 나타난 것처럼 모든 그래프가 상관계수가 1임에도 불구하고 각각의 기울기는 다르다는 것이다. 따라서 상관계수는 선형적으로 데이터가
@@ -566,7 +581,7 @@ correaltion
 correaltion %>% corrplot::corrplot(method='color', type = 'upper', diag = F, number.cex = 1, addCoef.col = 'black')
 ```
 
-<img src="car_price_files/figure-gfm/unnamed-chunk-45-1.jpeg" style="display: block; margin: auto;" />
+<img src="car_price_files/figure-gfm/unnamed-chunk-46-1.jpeg" style="display: block; margin: auto;" />
 
 또한 상관계수는 그 자체로 상관분석으로 사용되는데 이때 사용되는 가설은 다음과 같다.
 
@@ -706,7 +721,7 @@ box5 <- ggplot(car_price, aes(년식 ,가격) )+
 grid.arrange(box1, box2, box3, box4, box5, ncol=2)
 ```
 
-<img src="car_price_files/figure-gfm/unnamed-chunk-56-1.jpeg" style="display: block; margin: auto;" />
+<img src="car_price_files/figure-gfm/unnamed-chunk-57-1.jpeg" style="display: block; margin: auto;" />
 
 추가적으로 집단간 평균값을 뽑아서 비교해보는 것도 좋은 방법이다.
 
@@ -715,10 +730,6 @@ grid.arrange(box1, box2, box3, box4, box5, ncol=2)
 tapply(car_price$가격, car_price$종류, summary)
 ```
 
-    ## $대형
-    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-    ##    1430    1915    2160    3465    4024   14570 
-    ## 
     ## $소형
     ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
     ##     870    1135    1270    1285    1448    1645 
@@ -729,7 +740,11 @@ tapply(car_price$가격, car_price$종류, summary)
     ## 
     ## $중형
     ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-    ##    2255    2708    2874    2974    3256    3802
+    ##    2255    2708    2874    2974    3256    3802 
+    ## 
+    ## $대형
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##    1430    1915    2160    3465    4024   14570
 
 ``` r
 # descriptive statistics by group
@@ -997,7 +1012,7 @@ colSums(is.na(car_price))
 MissForest, Hmisc 등의 패키지에서 함수를 지원합니다. 방법은 다소 복잡하나 지원하는 라이브러리에 편한 사용법이
 있으니 이를 활용하는게 가장 좋은 방법입니다.
 
-![그림예제](C:/Users/afeve/Documents/Tutorials/Regression/Car_Price/multiple_imputation.png)
+![그림예제](https://raw.githubusercontent.com/afeverishday/Tutorials/master/Regression/Car_Price/multiple_imputation.png)
 위 그림이 multiple imputation의 기본적인 구조를 뜻합니다.
 
 결측치를 채우는 과정은 데이터에 임의로 결측치를 포함시킨뒤에 수행해보겠습니다.
@@ -1072,7 +1087,7 @@ isnt_out_tukey <- function(x, k = 1.5, na.rm = TRUE) {
 하는 경우 이 값을 작게 하다보면 실제로 해당 데이터가 이상치가 아님에도 이상치로 판단하는 경우가 생길수 있다.
 
 이에 대한 그림은 다음과 같다.  
-![그림예제](C:/Users/afeve/Documents/Tutorials/Regression/Car_Price/distribution.jpg)
+![그림예제](https://raw.githubusercontent.com/afeverishday/Tutorials/master/Regression/Car_Price/distribution.jpg)
 
 1)  먼저 histogram을 그려본다. 이때 histogram에서 대략 어느정도 벗어나는 값들을 이상치로 판단할지 값을
     정한다.
@@ -1088,7 +1103,7 @@ ggplot(car_price, aes(x=가격, y=..density..)) +
    ggtitle("Histogram + Kernel Density Curve")
 ```
 
-<img src="car_price_files/figure-gfm/unnamed-chunk-75-1.jpeg" style="display: block; margin: auto;" />
+<img src="car_price_files/figure-gfm/unnamed-chunk-76-1.jpeg" style="display: block; margin: auto;" />
 
 2)  평균값과 표준편차 값을 구한다.
 
@@ -1140,7 +1155,7 @@ library(mvoutlier)
 a<-mvoutlier::corr.plot(car_price$연비, car_price$가격, quan=1, alpha=0.05) #quan:표본 비율, #alpha:유의수준
 ```
 
-<img src="car_price_files/figure-gfm/unnamed-chunk-80-1.jpeg" style="display: block; margin: auto;" />
+<img src="car_price_files/figure-gfm/unnamed-chunk-81-1.jpeg" style="display: block; margin: auto;" />
 
 다음으로 이와 비슷하지만 bagplot을 이용하는 방법이 있다. 모양은 산점도와 같은데, 이상치를 판단하는 기준이 위와 다르다.
 깊이 중위수(depth median)이 중심이 되며, n/2의 데이터가 가운데 “가방(bag)”에 몰려있고, 가방을 3배
@@ -1155,7 +1170,7 @@ car_bagplot<-aplpack::bagplot(car_price$연비, car_price$가격, xlab="qsec", y
              show.baghull=TRUE,verbose=FALSE)
 ```
 
-<img src="car_price_files/figure-gfm/unnamed-chunk-81-1.jpeg" style="display: block; margin: auto;" />
+<img src="car_price_files/figure-gfm/unnamed-chunk-82-1.jpeg" style="display: block; margin: auto;" />
 
 ``` r
 car_outlier <- as.data.frame(car_bagplot$pxy.outlier)
@@ -1187,7 +1202,7 @@ library(chemometrics)
 mah <-car_price%>%dplyr::select(가격, 연비, 토크, 마력, 배기량, 중량)%>% chemometrics::Moutlier(quantile = 0.99)
 ```
 
-<img src="car_price_files/figure-gfm/unnamed-chunk-83-1.jpeg" style="display: block; margin: auto;" />
+<img src="car_price_files/figure-gfm/unnamed-chunk-84-1.jpeg" style="display: block; margin: auto;" />
 
 ``` r
 mah
@@ -1294,7 +1309,7 @@ lof %>% density()
 density(lof) %>% plot()
 ```
 
-<img src="car_price_files/figure-gfm/unnamed-chunk-88-1.jpeg" style="display: block; margin: auto;" />
+<img src="car_price_files/figure-gfm/unnamed-chunk-89-1.jpeg" style="display: block; margin: auto;" />
 
 ``` r
 which(lof>5)
@@ -1336,7 +1351,7 @@ ggplot(car_price%>% dplyr::select(z_연비, z_가격)) +
    theme_bw()
 ```
 
-<img src="car_price_files/figure-gfm/unnamed-chunk-91-1.jpeg" style="display: block; margin: auto;" />
+<img src="car_price_files/figure-gfm/unnamed-chunk-92-1.jpeg" style="display: block; margin: auto;" />
 
 ``` r
 library(fpc)
@@ -1494,11 +1509,42 @@ ggplot(car_price, aes(x=log_가격, y=..density..)) +
    ggtitle("Histogram + Kernel Density Curve")
 ```
 
-<img src="car_price_files/figure-gfm/unnamed-chunk-96-1.jpeg" style="display: block; margin: auto;" />
+<img src="car_price_files/figure-gfm/unnamed-chunk-97-1.jpeg" style="display: block; margin: auto;" />
 
-이에 대한 그림은 다음과 같다.  
-![그림예제](C:/Users/afeve/Documents/Tutorials/Regression/Car_Price/log.jpg)
-![그림예제](C:/Users/afeve/Documents/Tutorials/Regression/Car_Price/root.jpg)
+이에 대한 그림은 다음과 같다.
+
+``` r
+library(knitr)
+include_graphics("https://raw.githubusercontent.com/afeverishday/Tutorials/master/Regression/Car_Price/log.JPG")
+```
+
+<div class="figure" style="text-align: center">
+
+<img src="https://raw.githubusercontent.com/afeverishday/Tutorials/master/Regression/Car_Price/log.JPG" alt="식"  />
+
+<p class="caption">
+
+식
+
+</p>
+
+</div>
+
+``` r
+include_graphics("https://raw.githubusercontent.com/afeverishday/Tutorials/master/Regression/Car_Price/root.JPG")
+```
+
+<div class="figure" style="text-align: center">
+
+<img src="https://raw.githubusercontent.com/afeverishday/Tutorials/master/Regression/Car_Price/root.JPG" alt="식"  />
+
+<p class="caption">
+
+식
+
+</p>
+
+</div>
 
 ## 범주화
 
@@ -1634,7 +1680,7 @@ summary(car_prcomp)
 plot(car_prcomp, type = 'l', sub='Scree plot')
 ```
 
-<img src="car_price_files/figure-gfm/unnamed-chunk-104-1.jpeg" style="display: block; margin: auto;" />
+<img src="car_price_files/figure-gfm/unnamed-chunk-106-1.jpeg" style="display: block; margin: auto;" />
 
 결과가 나왔다면 이제 몇개의 PCA를 만들어야 할지를 판단해야 합니다. 정해진 기준은 없지만 일반적으로 따르는 기준은 다음과
 같습니다.
@@ -1819,7 +1865,7 @@ text(car_factanal$scores[,1], car_factanal$scores[,2],
      cex = 0.7, pos = 3, col = "blue")
 ```
 
-<img src="car_price_files/figure-gfm/unnamed-chunk-109-1.jpeg" style="display: block; margin: auto;" />
+<img src="car_price_files/figure-gfm/unnamed-chunk-111-1.jpeg" style="display: block; margin: auto;" />
 
 # Regression 예측 모델
 
@@ -1861,7 +1907,7 @@ fit <-lm(log_가격~ isold+종류+m_연비+m_마력+m_토크+연료+하이브리
 qqPlot(fit,labels=row.names(car_price),id.method="identify",simulate=T,main="Q-Q_ plot")
 ```
 
-<img src="car_price_files/figure-gfm/unnamed-chunk-110-1.jpeg" style="display: block; margin: auto;" />
+<img src="car_price_files/figure-gfm/unnamed-chunk-112-1.jpeg" style="display: block; margin: auto;" />
 
     ## [1] 94 96
 
@@ -1881,7 +1927,7 @@ residplot <- function(fit, nbreaks=10) {
 residplot(fit)
 ```
 
-<img src="car_price_files/figure-gfm/unnamed-chunk-111-1.jpeg" style="display: block; margin: auto;" />
+<img src="car_price_files/figure-gfm/unnamed-chunk-113-1.jpeg" style="display: block; margin: auto;" />
 
 독립성은 car 패키지의 Durbin-Watson 검정을 이용하여 독립성 가정을 검정할 수 있다.
 
@@ -1900,7 +1946,7 @@ durbinWatsonTest(fit)
 crPlots(fit)
 ```
 
-<img src="car_price_files/figure-gfm/unnamed-chunk-113-1.jpeg" style="display: block; margin: auto;" /><img src="car_price_files/figure-gfm/unnamed-chunk-113-2.jpeg" style="display: block; margin: auto;" />
+<img src="car_price_files/figure-gfm/unnamed-chunk-115-1.jpeg" style="display: block; margin: auto;" /><img src="car_price_files/figure-gfm/unnamed-chunk-115-2.jpeg" style="display: block; margin: auto;" />
 이 그림에서 비선형성이 관찰된다면 회귀방법으로 적절하게 모형을 만들 수 엇다는 것을 뜻할 수 있다. 그런 경우 다항회귀를 사용하여
 curvilinear component를 추가하거나 변수를 (로그 등으로) 변환하거나 선형회귀 외에 다른 회귀 방법을 사용해야 할
 수 있다. 이 모형에서 crPlots을 보면 선형성 가정을 만족한다고 할 수 있다.
@@ -1919,7 +1965,7 @@ ncvTest(fit)
 spreadLevelPlot(fit)
 ```
 
-<img src="car_price_files/figure-gfm/unnamed-chunk-115-1.jpeg" style="display: block; margin: auto;" />
+<img src="car_price_files/figure-gfm/unnamed-chunk-117-1.jpeg" style="display: block; margin: auto;" />
 
     ## 
     ## Suggested power transformation:  -0.9346204
@@ -2048,6 +2094,9 @@ vif(fit2)
     ## m_중량     22.460997  1        4.739303
     ## 변속기      1.270878  1        1.127332
 
+일차적으로 종속변수와의 상관계수가 가장 낮은 변수인 배기량을 제거해 보았으나 여전히 종류, 토크, 연료, 중량이 모두 vif값이
+높게 나와서 다중공선성의 문제가 보였다.
+
 ``` r
 fit3 <-lm(log_가격~ m_연비+m_마력+하이브리드+m_중량+변속기, data=car_price)
 summary(fit3)
@@ -2083,6 +2132,8 @@ vif(fit3)
 
     ##     m_연비     m_마력 하이브리드     m_중량     변속기 
     ##   2.189422   1.742041   1.112381   2.551743   1.132047
+
+그래서 회귀계수가 유의하지 않고 문제가 있다고 판단된 다음의 종류, 토크, 연료, 중량 변수를 제거하자 다중공선성이 사라졌다.
 
 “최선의” 회귀모형 고르기 - AIC 값 비교:모형의 통계적 적합성 및 통계 적합에 필요한 인수의 수를 설명해 준다. AIC 값이
 적은 모형, 즉 적은 인수를 가지고 적절한 적합성을 보이는 모형이 선호된다.
@@ -2198,5 +2249,47 @@ caret::postResample(pred = median(car_price$가격), obs = car_price$가격) #�
 짧은 편이지만..) 따라서 정말 다양한 방법들이 존재한다. 이 내용 모두를 다룰 수는 없겠지만 기본적으로 수치예측 모델에
 활용될수 있는 몇가지 회귀분석 모델에 관해서는 언급하고 넘어가고자 한다.
 
-지금 부터는 데이터를 실제적으로 예측하기 위한 절차와 다양한 Regression Model과 예측 방법에 대해서 다루어 본다.
-수치예측을 위한 모델은
+회귀분석의 분류는 크게 종속변수의 개수가 1개이냐 그 이상이냐에 따라서 다변량 회귀분석과 일변량 회귀분석으로 나뉜다. 일반적으로
+우리가 사용하는 방법이 일변량 회귀분석이며, 다변량 회귀분석은 진행하려는 목적의 범위를 다소 벗어나기 때문에 생략한다.
+그렇다면 일변량 회귀분석은 어떻게 구분되어 질수 있을까? 구분하려는 기준에 따라 다르지만 예측 모델을 생성하는데
+있어서는 비선형과 선형 모형으로 구별가능하다. 우리는 지금까지 선형적인 모델만 다루었는데, 그렇다면 비선형 모델은 어떻게
+만들어질수 있을까. 가장 간단한 방법은 독립변수와 종속변수간의 관계가 1차식이 아니라 2차식인 경우를 떠올려 볼수 있다. 만약
+위 데이터에서 연비가 아니라 연비의 제곱과 관계가 있다면 이 모델은 x와 y 사이의 그래프를 그렸을때 비선형적인 모습을 보일
+것이다. 또, 연비의 1차식과 2차식이 모두 가격과 관계가 있다면 이는 다항회귀(polynomial
+Regression)의 형태를 띄게 되고 비선형적인 모습을 보이게 된다. 이를 정리해보면 아래와 같다. 사실 명확하게 구분하기는
+어렵고, 관점에 따라 다른 곳에 위치할수 있기 때문에 그냥 참고용으로 봐주기를 바랍니다.
+
+회귀분석
+
+1)  다변량 회귀분석 가. 다변량 선형 회귀분석
+      - VAR, SUR 등 나. 다변량 비선형 회귀분석
+      - RNN, CNN, DNN등
+2)  일변량 회귀분석 가. 일변량 선형 회귀분석
+      - Ridge / Lasso / Elastic net regression
+      - Robust / Quantile regression
+      - 나. 일변량 비선형 회귀분석
+      - 다항 회귀 (Polynomial regression) /Generalized Additive Model (GAM)
+      - Generalized Linear Model (GLM)
+      - Principal Component Regression (PCR)
+      - Partial Least Square (PLS) regression 다. 시계열 회귀분석
+      - Autoregressive Model 라. survival Regression
+
+구별 기준과 별개로 사용되는 목적이 더 중요하기 때문에, 이 내용은 좀더 다루어 본다.
+
+Ridge / Lasso / Elastic net regression =\> 다중공선성 문제를 해결하기 위해 사용되며, 회귀계수
+값이 커지지 않도록 패널티를 적용한 모델
+
+``` r
+#library(glmnet)
+#ridge.mod <- glmnet(x, y, alpha = 0, lambda = lambda)
+#lasso.mod <- glmnet(x[train,], y[train], alpha = 1, lambda = lambda)
+```
+
+Robust / Quantile regression =\> 이상치를 해결하기 위한 목적으로 사용되며
+
+다항 회귀 (Polynomial regression) /Generalized Additive Model (GAM) =\> 독립
+변수와 종속 변수가 선형 관계가 아닌 경우
+
+Generalized Linear Model (GLM) =\> 오차항의 확률분포가 정규분포가 아닌 경우
+
+Autoregressive Model =\> 오차항에 자기 상관성이 있는 경우, 시계열 데이터를 예측하기 위한 목적으로 사용됨.
