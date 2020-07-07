@@ -13,7 +13,7 @@ Asia = c('China','Sri Lanka', 'Hong Kong','India','Iran','Israel',
          'Saudi Arabia','Malaysia','Pakistan','South Korea','Taiwan','Thailand','Turkey')
 
 Europe = c('Russia','Finland','Czech Republic','France','Germany','Greece',
-          'Italy','Netherlands','Poland','Spain','Sweden')
+           'Italy','Netherlands','Poland','Spain','Sweden')
 
 #'Serbia 데이터는 location이 생략되어 있음.
 
@@ -31,51 +31,8 @@ for (i in 1:length(Africa)) {
                                col_types = "guess", # guess the types of columns
                                na = "NA" )%>%  dplyr::filter((Frequency>=0.01)&(Sample>=50))%>%
            dplyr::select(-Line,-individuals,-Population, -Location)%>% 
-           mutate(country=Africa[i],
-                  type=ifelse(substr(Allele,1,1)=='A', 'A',
-                              ifelse(substr(Allele,1,1)=='B', 'B',
-                                     ifelse(substr(Allele,1,1)=='C', 'C',
-                                            ifelse(substr(Allele,1,2)=='DQ', 'DQ',
-                                                   ifelse(substr(Allele,1,2)=='DP', 'DP',
-                                                          ifelse(substr(Allele,1,2)=='DR', 'DR',substr(Allele,1,2))
-                                                          )
-                                                   )
-                                            )
-                                     )
-                              )) %>% dplyr::arrange(Allele, Frequency)) 
-  }
-
-Morocco = Morocco[!duplicated(Morocco[,c('Allele')]),] 
-Kenya = Kenya[!duplicated(Kenya[,c('Allele')]),] 
-Nigeria = Nigeria[!duplicated(Nigeria[,c('Allele')]),] 
-`South Africa`= `South Africa`[!duplicated(`South Africa`[,c('Allele')]),] 
-Tunisia = Tunisia[!duplicated(Tunisia[,c('Allele')]),] 
-
-
-Africa_tot<- full_join(Morocco, Kenya, by=c('Allele','type')) %>%full_join(Nigeria, by=c('Allele','type')) %>%
-  full_join(`South Africa`, by=c('Allele','type')) %>%full_join(Tunisia, by=c('Allele','type')) %>%
-  mutate(Geo="Africa",
-         Tot_Count=length(Africa),
-         Count= (ifelse(is.na(Frequency.x),0,1) +ifelse(is.na(Frequency.y),0,1)+
-           ifelse(is.na(Frequency.x.x),0,1)+ifelse(is.na(Frequency.y.y),0,1)+ifelse(is.na(Frequency),0,1)) ,
-         INFO= paste0(  "Morocco: " , Frequency.x ,", ", "Kenya: " , Frequency.y ,", ",
-            "Nigeria: " , Frequency.x.x ,", " , "South Africa: " , Frequency.y.y ,", ",
-            "Tunisia: " , Frequency )) %>%  select(Geo, Allele, Count, Tot_Count, INFO)
-
-
-
-
-for (i in 1:length(Asia)) {
-  print(i)
-  assign(Asia[i] ,read_excel("C:/Users/afeve/Documents/Tutorials/Geneset/HLA dataset/AFND_국가별.xlsx", # path
-                               sheet = Asia[i], # sheet name to read from
-                               skip = 2,
-                               col_names = c('Line',	'Allele',	'Population',	'individuals',	'Frequency',	'Sample',	'Location'), # TRUE to use the first row as column names
-                               col_types = "guess", # guess the types of columns
-                               na = "NA" )%>%  dplyr::filter((Frequency>=0.01)&(Sample>=50))%>%
-           dplyr::select(-Line,-individuals,-Population, -Location)%>% 
-           mutate(country=Asia[i],
-                  type=ifelse(substr(Allele,1,1)=='A', 'A',
+           mutate(Country=Africa[i],
+                  Type=ifelse(substr(Allele,1,1)=='A', 'A',
                               ifelse(substr(Allele,1,1)=='B', 'B',
                                      ifelse(substr(Allele,1,1)=='C', 'C',
                                             ifelse(substr(Allele,1,2)=='DQ', 'DQ',
@@ -85,7 +42,63 @@ for (i in 1:length(Asia)) {
                                             )
                                      )
                               )
-                  )) %>% dplyr::arrange(Allele, Frequency)) 
+                  ),
+                  Geo='Africa')%>% dplyr::filter(Type %in% c('A', 'B', 'C')) %>% dplyr::arrange(Allele, Frequency)) 
+}
+
+Morocco = Morocco[!duplicated(Morocco[,c('Allele')]),] 
+Kenya = Kenya[!duplicated(Kenya[,c('Allele')]),] 
+Nigeria = Nigeria[!duplicated(Nigeria[,c('Allele')]),] 
+`South Africa`= `South Africa`[!duplicated(`South Africa`[,c('Allele')]),] 
+Tunisia = Tunisia[!duplicated(Tunisia[,c('Allele')]),] 
+
+
+
+Africa_new1= bind_rows(Morocco, Kenya, Nigeria, `South Africa`, Tunisia) %>% 
+  dplyr::select(-Sample, -Type, Allele, Country, Geo,Frequency) %>% mutate(count=1)
+
+Africa_new2= Africa_new1 %>% spread( key='Country', value='count')
+
+Africa_new2[is.na(Africa_new2)]<-0
+
+library(tidyr)
+Africa_new2<-Africa_new2 %>%  
+  mutate(INFO= paste0( 'Count: ',Kenya+Morocco+`South Africa`+Tunisia,'/',length(Africa)-1, ', Country: ', 
+                       ifelse( Kenya==1, 'Kenya ', ''),ifelse(Morocco==1, 'Morocco ', ''),
+                       ifelse( Nigeria==1, 'Nigeria ', ''),ifelse(`South Africa`==1, 'South Africa ', ''),
+                       ifelse( Tunisia==1, 'Tunisia ', ''))) %>% 
+  dplyr::select(-Kenya , -Morocco, -`South Africa`,-Tunisia, -Geo)
+
+Africa_tot<-dplyr::full_join(Africa_new1 , Africa_new2, by=c('Allele','Frequency') ) %>% 
+  dplyr::select(Country, Geo, Allele, Frequency, INFO)
+
+colnames(Africa_tot)<- c('Country', 'Geo', 'HLA_type', 'Frequency', 'INFO')
+
+
+
+
+for (i in 1:length(Asia)) {
+  print(i)
+  assign(Asia[i] ,read_excel("C:/Users/afeve/Documents/Tutorials/Geneset/HLA dataset/AFND_국가별.xlsx", # path
+                             sheet = Asia[i], # sheet name to read from
+                             skip = 2,
+                             col_names = c('Line',	'Allele',	'Population',	'individuals',	'Frequency',	'Sample',	'Location'), # TRUE to use the first row as column names
+                             col_types = "guess", # guess the types of columns
+                             na = "NA" )%>%  dplyr::filter((Frequency>=0.01)&(Sample>=50))%>%
+           dplyr::select(-Line,-individuals,-Population, -Location)%>% 
+           mutate(Country=Asia[i],
+                  Type=ifelse(substr(Allele,1,1)=='A', 'A',
+                              ifelse(substr(Allele,1,1)=='B', 'B',
+                                     ifelse(substr(Allele,1,1)=='C', 'C',
+                                            ifelse(substr(Allele,1,2)=='DQ', 'DQ',
+                                                   ifelse(substr(Allele,1,2)=='DP', 'DP',
+                                                          ifelse(substr(Allele,1,2)=='DR', 'DR',substr(Allele,1,2))
+                                                   )
+                                            )
+                                     )
+                              )
+                  ),
+                  Geo='Asia')%>% dplyr::filter(Type %in% c('A', 'B', 'C')) %>% dplyr::arrange(Allele, Frequency)) 
 }
 
 China = China[!duplicated(China[,c('Allele')]),] 
@@ -103,27 +116,30 @@ Thailand = Thailand[!duplicated(Thailand[,c('Allele')]),]
 Turkey = Turkey[!duplicated(Turkey[,c('Allele')]),] 
 
 
+Asia_new1= bind_rows(China,`Sri Lanka`,`Hong Kong`,India,Iran, Israel, `Saudi Arabia`, Malaysia,
+                     Pakistan,`South Korea`, Taiwan, Thailand, Turkey ) %>% 
+  dplyr::select(-Sample, -Type, Allele, Country, Geo, Frequency) %>% mutate(count=1)
 
-Asia_tot<- full_join(China, `Sri Lanka`, by=c('Allele','type')) %>%full_join(`Hong Kong`, by=c('Allele','type')) %>%
-  full_join(India, by=c('Allele','type')) %>% full_join(Iran, by=c('Allele','type')) %>% 
-  full_join(Israel, by=c('Allele','type')) %>% full_join(`Saudi Arabia`, by=c('Allele','type')) %>%
-  full_join(Malaysia, by=c('Allele','type')) %>% full_join(Pakistan, by=c('Allele','type')) %>% 
-  full_join(`South Korea`, by=c('Allele','type')) %>% full_join(Taiwan, by=c('Allele','type')) %>% 
-  full_join(Thailand, by=c('Allele','type')) %>% full_join(Turkey, by=c('Allele','type')) %>%
-  mutate(Geo="Asia",
-         Tot_Count=length(Asia),
-         Count= (ifelse(is.na(Frequency.x),0,1) +ifelse(is.na(Frequency.y),0,1)+
-                   ifelse(is.na(Frequency.x.x),0,1)+ifelse(is.na(Frequency.y.y),0,1)+ifelse(is.na(Frequency.x.x.x),0,1)+
-                   ifelse(is.na(Frequency.y.y.y),0,1)+ifelse(is.na(Frequency.x.x.x.x),0,1)+ifelse(is.na(Frequency.y.y.y.y),0,1)+
-                   ifelse(is.na(Frequency.x.x.x.x.x),0,1)+ifelse(is.na(Frequency.y.y.y.y.y),0,1)+ifelse(is.na(Frequency.x.x.x.x.x.x),0,1)+
-                   ifelse(is.na(Frequency.y.y.y.y.y.y),0,1)+ifelse(is.na(Frequency),0,1)) ,
-         INFO= paste0( "China: " , Frequency.x ,", ", "Sri Lanka: " , Frequency.y ,", ",
-                       "Hong Kong: " , Frequency.x.x ,", " , "India: " , Frequency.y.y ,", ",
-                       "Iran: " , Frequency.x.x.x , "Israel: " , Frequency.y.y.y,
-                       "Saudi Arabia: " , Frequency.x.x.x.x,  "Malaysia: " , Frequency.y.y.y.y,
-                       "Pakistan: " , Frequency.x.x.x.x.x,  "South Korea: " , Frequency.y.y.y.y.y,
-                       "Taiwan: " , Frequency.x.x.x.x.x.x, "Thailand: " , Frequency.y.y.y.y.y.y,
-                       "Turkey: " , Frequency)) %>%  select(Geo, Allele, Count, Tot_Count, INFO)
+Asia_new2= Asia_new1 %>% spread( key='Country', value='count')
+
+Asia_new2[is.na(Asia_new2)]<-0
+
+library(tidyr)
+Asia_new2<-Asia_new2 %>%  
+  mutate(INFO= paste0( 'Count: ',China+`Sri Lanka`+`Hong Kong`+India+Iran+ Israel+ `Saudi Arabia`+ Malaysia+ Pakistan+`South Korea`+ Taiwan+ Thailand+ Turkey,'/',length(Asia), 
+                       ', Country: ', ifelse( China==1, 'China ', ''),ifelse(`Sri Lanka`==1, 'Sri Lanka ', ''),
+                       ifelse( `Hong Kong`==1, 'Hong Kong ', ''), ifelse(India==1, 'India ', ''), 
+                       ifelse( Iran==1, 'Iran ', ''), ifelse( Israel==1, 'Israel ', ''),
+                       ifelse( `Saudi Arabia`==1, 'Saudi Arabia ', ''), ifelse( Malaysia==1, 'Malaysia ', ''),
+                       ifelse( Pakistan==1, 'Pakistan ', ''),ifelse( `South Korea`==1, 'South Korea ', ''),
+                       ifelse( Taiwan==1, 'Taiwan ', ''),ifelse( Thailand==1, 'Thailand ', ''),ifelse( Turkey==1, 'Turkey ', ''))) %>% 
+  dplyr::select(-China, -`Sri Lanka`,-`Hong Kong`,-India,-Iran,-Israel,-`Saudi Arabia`,-Malaysia,-Pakistan,-`South Korea`,
+                -Taiwan,-Thailand,-Turkey,  -Geo)
+
+Asia_tot<-dplyr::full_join(Asia_new1 , Asia_new2, by=c('Allele','Frequency') ) %>% 
+  dplyr::select(Country, Geo, Allele, Frequency, INFO)
+
+colnames(Asia_tot)<- c('Country', 'Geo', 'HLA_type', 'Frequency', 'INFO')
 
 
 
@@ -139,8 +155,8 @@ for (i in 1:length(Europe)) {
                                col_types = "guess", # guess the types of columns
                                na = "NA" )%>%  dplyr::filter((Frequency>=0.01)&(Sample>=50))%>%
            dplyr::select(-Line,-individuals,-Population, -Location)%>% 
-           mutate(country=Europe[i],
-                  type=ifelse(substr(Allele,1,1)=='A', 'A',
+           mutate(Country=Europe[i],
+                  Type=ifelse(substr(Allele,1,1)=='A', 'A',
                               ifelse(substr(Allele,1,1)=='B', 'B',
                                      ifelse(substr(Allele,1,1)=='C', 'C',
                                             ifelse(substr(Allele,1,2)=='DQ', 'DQ',
@@ -150,19 +166,20 @@ for (i in 1:length(Europe)) {
                                             )
                                      )
                               )
-                  )) %>% dplyr::arrange(Allele, Frequency)) 
+                  ),
+                  Geo='Europe')%>% dplyr::filter(Type %in% c('A', 'B', 'C')) %>% dplyr::arrange(Allele, Frequency)) 
 }
 
 # Serbia는 location이 존재하지 않음.
 assign("Serbia" ,read_excel("C:/Users/afeve/Documents/Tutorials/Geneset/HLA dataset/AFND_국가별.xlsx", # path
-                             sheet = "Serbia", # sheet name to read from
-                             skip = 2,
-                             col_names = c('Line',	'Allele',	'Population',	'individuals',	'Frequency',	'Sample'), # TRUE to use the first row as column names
-                             col_types = "guess", # guess the types of columns
-                             na = "NA" )%>%  dplyr::filter((Frequency>=0.01)&(Sample>=50))%>%
+                            sheet = "Serbia", # sheet name to read from
+                            skip = 2,
+                            col_names = c('Line',	'Allele',	'Population',	'individuals',	'Frequency',	'Sample'), # TRUE to use the first row as column names
+                            col_types = "guess", # guess the types of columns
+                            na = "NA" )%>%  dplyr::filter((Frequency>=0.01)&(Sample>=50))%>%
          dplyr::select(-Line,-individuals,-Population)%>% 
-         mutate(country="Serbia",
-                type=ifelse(substr(Allele,1,1)=='A', 'A',
+         mutate(Country="Serbia",
+                Type=ifelse(substr(Allele,1,1)=='A', 'A',
                             ifelse(substr(Allele,1,1)=='B', 'B',
                                    ifelse(substr(Allele,1,1)=='C', 'C',
                                           ifelse(substr(Allele,1,2)=='DQ', 'DQ',
@@ -172,7 +189,8 @@ assign("Serbia" ,read_excel("C:/Users/afeve/Documents/Tutorials/Geneset/HLA data
                                           )
                                    )
                             )
-                )) %>% dplyr::arrange(Allele, Frequency))
+                ),
+                Geo='Europe')%>% dplyr::filter(Type %in% c('A', 'B', 'C')) %>% dplyr::arrange(Allele, Frequency))
 
 
 Russia = Russia[!duplicated(Russia[,c('Allele')]),] 
@@ -189,27 +207,29 @@ Spain = Spain[!duplicated(Spain[,c('Allele')]),]
 Sweden = Sweden[!duplicated(Sweden[,c('Allele')]),] 
 
 
+Europe_new1= bind_rows(Russia, Finland, `Czech Republic`, France, Germany,Greece, Italy, Netherlands,
+                       Poland, Spain,  Sweden ) %>% 
+  dplyr::select(-Sample, -Type, Allele, Country, Geo, Frequency) %>% mutate(count=1)
 
-Europe_tot<- full_join(Russia, Finland, by=c('Allele','type')) %>%
-  full_join(`Czech Republic`, by=c('Allele','type')) %>% full_join(France, by=c('Allele','type')) %>% 
-  full_join(Germany, by=c('Allele','type')) %>% full_join(Greece, by=c('Allele','type')) %>%
-  full_join(Italy, by=c('Allele','type')) %>% full_join(Netherlands, by=c('Allele','type')) %>% 
-  full_join(Poland, by=c('Allele','type')) %>% full_join(Serbia, by=c('Allele','type')) %>% 
-  full_join(Spain, by=c('Allele','type')) %>%full_join(Sweden, by=c('Allele','type')) %>%
-  mutate(Geo="Europe",
-         Tot_Count=length(Europe)+1,
-         Count= (ifelse(is.na(Frequency.x),0,1) +ifelse(is.na(Frequency.y),0,1)+
-                   ifelse(is.na(Frequency.x.x),0,1)+ifelse(is.na(Frequency.y.y),0,1)+ifelse(is.na(Frequency.x.x.x),0,1)+
-                   ifelse(is.na(Frequency.y.y.y),0,1)+ifelse(is.na(Frequency.x.x.x.x),0,1)+ifelse(is.na(Frequency.y.y.y.y),0,1)+
-                   ifelse(is.na(Frequency.x.x.x.x.x),0,1)+ifelse(is.na(Frequency.y.y.y.y.y),0,1)+ifelse(is.na(Frequency.x.x.x.x.x.x),0,1)+
-                   ifelse(is.na(Frequency.y.y.y.y.y.y),0,1)) ,
-         INFO= paste0( "Russia: " , Frequency.x ,", ", "Finland: " , Frequency.y ,", ",
-                       "Czech Republic: " , Frequency.x.x ,", ", "France: " , Frequency.y.y ,", ",
-                       "Germany: " , Frequency.x.x.x, "Greece: " , Frequency.y.y.y,
-                       "Italy: " , Frequency.x.x.x.x,  "Netherlands: " , Frequency.y.y.y.y,
-                       "Poland: " , Frequency.x.x.x.x.x, "Serbia: " , Frequency.y.y.y.y.y,
-                       "Spain: " , Frequency.x.x.x.x.x.x,  "Sweden: " , Frequency.y.y.y.y.y.y)) %>%  select(Geo, Allele, Count, Tot_Count, INFO)
+Europe_new2= Europe_new1 %>% spread( key='Country', value='count')
 
+Europe_new2[is.na(Europe_new2)]<-0
+
+library(tidyr)
+Europe_new2<-Europe_new2 %>%  
+  mutate(INFO= paste0( 'Count: ',Russia+ Finland+ `Czech Republic`+ France+ Germany+Greece+ Italy+ Netherlands+  Poland+ Spain+  Sweden,'/',length(Europe), 
+                       ', Country: ', ifelse( Russia==1, 'Russia ', ''),ifelse(Finland==1, 'Finland ', ''),
+                       ifelse( `Czech Republic`==1, 'Czech Republic ', ''), ifelse(France==1, 'France ', ''), 
+                       ifelse( Germany==1, 'Germany ', ''), ifelse( Greece==1, 'Greece ', ''),
+                       ifelse( Italy==1, 'Italy ', ''), ifelse( Netherlands==1, 'Netherlands ', ''),
+                       ifelse( Poland==1, 'Poland ', ''),ifelse( Spain==1, 'Spain ', ''),
+                       ifelse( Sweden==1, 'Sweden ', ''))) %>% 
+  dplyr::select(-Russia, -Finland, -`Czech Republic`, -France, -Germany, -Greece, -Italy, -Netherlands, -Poland, -Spain, -Sweden,  -Geo)
+
+Europe_tot<-dplyr::full_join(Europe_new1 , Europe_new2, by=c('Allele','Frequency') ) %>% 
+  dplyr::select(Country, Geo, Allele, Frequency, INFO)
+
+colnames(Europe_tot)<- c('Country', 'Geo', 'HLA_type', 'Frequency', 'INFO')
 
 
 
@@ -223,8 +243,8 @@ for (i in 1:length(NorthAmerica)) {
                                      col_types = "guess", # guess the types of columns
                                      na = "NA" )%>%  dplyr::filter((Frequency>=0.01)&(Sample>=50))%>%
            dplyr::select(-Line,-individuals,-Population, -Location)%>% 
-           mutate(country=NorthAmerica[i],
-                  type=ifelse(substr(Allele,1,1)=='A', 'A',
+           mutate(Country=NorthAmerica[i],
+                  Type=ifelse(substr(Allele,1,1)=='A', 'A',
                               ifelse(substr(Allele,1,1)=='B', 'B',
                                      ifelse(substr(Allele,1,1)=='C', 'C',
                                             ifelse(substr(Allele,1,2)=='DQ', 'DQ',
@@ -234,18 +254,31 @@ for (i in 1:length(NorthAmerica)) {
                                             )
                                      )
                               )
-                  )) %>% dplyr::arrange(Allele, Frequency)) 
+                  ),
+                  Geo='NorthAmerica')%>% dplyr::filter(Type %in% c('A', 'B', 'C')) %>% dplyr::arrange(Allele, Frequency)) 
 }
 
 Jamaica = Jamaica[!duplicated(Jamaica[,c('Allele')]),] 
 USA = USA[!duplicated(USA[,c('Allele')]),] 
 
+NorthAmerica_new1= bind_rows(Jamaica, USA ) %>% 
+  dplyr::select(-Sample, -Type, Allele, Country, Geo, Frequency) %>% mutate(count=1)
 
-NorthAmerica_tot<- full_join(Jamaica, USA, by=c('Allele','type')) %>%
-  mutate(Geo="NorthAmerica",
-         Tot_Count=length(NorthAmerica),
-         Count= (ifelse(is.na(Frequency.x),0,1) +ifelse(is.na(Frequency.y),0,1)) ,
-         INFO= paste0(  "Jmaica: " , Frequency.x ,", ", "USA: " , Frequency.y )) %>%  select(Geo, Allele, Count, Tot_Count, INFO)
+NorthAmerica_new2= NorthAmerica_new1 %>% spread( key='Country', value='count')
+
+NorthAmerica_new2[is.na(NorthAmerica_new2)]<-0
+
+library(tidyr)
+NorthAmerica_new2<-NorthAmerica_new2 %>%  
+  mutate(INFO= paste0( 'Count: ', USA,'/',length(NorthAmerica)-1, 
+                       ', Country: ', ifelse( Jamaica==1, 'Jamaica ', ''),ifelse(USA==1, 'USA ', ''))) %>% 
+  dplyr::select( -USA,  -Geo)
+
+NorthAmerica_tot<-dplyr::full_join(NorthAmerica_new1 , NorthAmerica_new2, by=c('Allele','Frequency') ) %>% 
+  dplyr::select(Country, Geo, Allele, Frequency, INFO)
+
+colnames(NorthAmerica_tot)<- c('Country', 'Geo', 'HLA_type', 'Frequency', 'INFO')
+
 
 
 
@@ -258,8 +291,8 @@ for (i in 1:length(Oceania)) {
                                 col_types = "guess", # guess the types of columns
                                 na = "NA" )%>%  dplyr::filter((Frequency>=0.01)&(Sample>=50))%>%
            dplyr::select(-Line,-individuals,-Population, -Location)%>% 
-           mutate(country=Oceania[i],
-                  type=ifelse(substr(Allele,1,1)=='A', 'A',
+           mutate(Country=Oceania[i],
+                  Type=ifelse(substr(Allele,1,1)=='A', 'A',
                               ifelse(substr(Allele,1,1)=='B', 'B',
                                      ifelse(substr(Allele,1,1)=='C', 'C',
                                             ifelse(substr(Allele,1,2)=='DQ', 'DQ',
@@ -269,18 +302,30 @@ for (i in 1:length(Oceania)) {
                                             )
                                      )
                               )
-                  )) %>% dplyr::arrange(Allele, Frequency)) 
+                  ),
+                  Geo='Oceania')%>% dplyr::filter(Type %in% c('A', 'B', 'C')) %>% dplyr::arrange(Allele, Frequency)) 
 }
 
 Australia = Australia[!duplicated(Australia[,c('Allele')]),] 
 
 
-Oceania_tot<- Australia%>%  mutate(Geo="Oceania",
-                                   Tot_Count=length(Oceania),
-                                   Count= (ifelse(is.na(Frequency),0,1) ),
-                                   INFO= paste0("Australia: " , Frequency )) %>%  select(Geo, Allele, Count, Tot_Count, INFO)
+Oceania_new1= Australia %>% 
+  dplyr::select(-Sample, -Type, Allele, Country, Geo, Frequency) %>% mutate(count=1)
 
+Oceania_new2= Oceania_new1 %>% spread( key='Country', value='count')
 
+Oceania_new2[is.na(Oceania_new2)]<-0
+
+library(tidyr)
+Oceania_new2<-Oceania_new2 %>%  
+  mutate(INFO= paste0( 'Count: ', Australia,'/',length(Oceania), 
+                       ', Country: ',ifelse(Australia==1, 'Australia ', ''))) %>% 
+  dplyr::select( -Australia,  -Geo)
+
+Oceania_tot<-dplyr::full_join(Oceania_new1 , Oceania_new2, by=c('Allele','Frequency') ) %>% 
+  dplyr::select(Country, Geo, Allele, Frequency, INFO)
+
+colnames(Oceania_tot)<- c('Country', 'Geo', 'HLA_type', 'Frequency', 'INFO')
 
 
 
@@ -293,8 +338,8 @@ for (i in 1:length(SouthAmerica)) {
                                      col_types = "guess", # guess the types of columns
                                      na = "NA" )%>%  dplyr::filter((Frequency>=0.01)&(Sample>=50))%>%
            dplyr::select(-Line,-individuals,-Population, -Location)%>% 
-           mutate(country=SouthAmerica[i],
-                  type=ifelse(substr(Allele,1,1)=='A', 'A',
+           mutate(Country=SouthAmerica[i],
+                  Type=ifelse(substr(Allele,1,1)=='A', 'A',
                               ifelse(substr(Allele,1,1)=='B', 'B',
                                      ifelse(substr(Allele,1,1)=='C', 'C',
                                             ifelse(substr(Allele,1,2)=='DQ', 'DQ',
@@ -304,7 +349,8 @@ for (i in 1:length(SouthAmerica)) {
                                             )
                                      )
                               )
-                  )) %>% dplyr::arrange(Allele, Frequency)) 
+                  ),
+                  Geo='SouthAmerica')%>% dplyr::filter(Type %in% c('A', 'B', 'C')) %>% dplyr::arrange(Allele, Frequency)) 
 }
 
 Brazil = Brazil[!duplicated(Brazil[,c('Allele')]),] 
@@ -312,34 +358,31 @@ Colombia = Colombia[!duplicated(Colombia[,c('Allele')]),]
 Peru = Peru[!duplicated(Peru[,c('Allele')]),] 
 
 
-SouthAmerica_tot<- full_join(Brazil, Colombia, by=c('Allele','type')) %>%full_join(Peru, by=c('Allele','type')) %>%
-  mutate(Geo="SouthAmerica",
-         Tot_Count=length(SouthAmerica),
-         Count= (ifelse(is.na(Frequency.x),0,1) +ifelse(is.na(Frequency.y),0,1)+
-                 ifelse(is.na(Frequency),0,1)) ,
-         INFO= paste0(  "Brazil: " , Frequency.x ,", ", "Colombia: " , Frequency.y ,", ",
-                        "Peru: " , Frequency )) %>%  select(Geo, Allele, Count, Tot_Count, INFO)
+SouthAmerica_new1= bind_rows(Brazil, Colombia, Peru ) %>% 
+  dplyr::select(-Sample, -Type, Allele, Country, Geo, Frequency) %>% mutate(count=1)
+
+SouthAmerica_new2= SouthAmerica_new1 %>% spread( key='Country', value='count')
+
+SouthAmerica_new2[is.na(SouthAmerica_new2)]<-0
+
+library(tidyr)
+SouthAmerica_new2<-SouthAmerica_new2 %>%  
+  mutate(INFO= paste0( 'Count: ', Brazil+ Colombia+ Peru,'/',length(SouthAmerica), 
+                       ', Country: ', ifelse( Brazil==1, 'Brazil ', ''), ifelse(Colombia==1, 'Colombia ', ''), 
+                       ifelse(Peru==1, 'Peru ', ''))) %>% 
+  dplyr::select( -Brazil,-Colombia, -Peru,  -Geo)
+
+SouthAmerica_tot<-dplyr::full_join(SouthAmerica_new1 , SouthAmerica_new2, by=c('Allele','Frequency') ) %>% 
+  dplyr::select(Country, Geo, Allele, Frequency, INFO)
+
+colnames(SouthAmerica_tot)<- c('Country', 'Geo', 'HLA_type', 'Frequency', 'INFO')
+
 
 
 
 result <-bind_rows(Africa_tot, Asia_tot, Europe_tot, NorthAmerica_tot, Oceania_tot, SouthAmerica_tot)
 
-colnames(result)<- c('Geo', 'HLA_type', 'Count', 'Tot_Count', 'INFO')
 
-write.table(result, "C:/Users/afeve/Documents/Tutorials/Geneset/HLA dataset/output1.txt",
-            sep = "\t",
-            row.names = F)
-
-
-
-# 나라별 면역 type 개수 구하는 code
-result_count = bind_rows(Morocco, Kenya,Nigeria,`South Africa`,Tunisia,China,`Sri Lanka`, `Hong Kong`,India,Iran,Israel, 
-          `Saudi Arabia`,Malaysia,Pakistan, `South Korea`,Taiwan,Thailand,Turkey,Russia,Finland,
-          `Czech Republic`,France,Germany,Greece, Italy,Netherlands,Poland,Spain,Sweden,Serbia,
-          Jamaica,USA,Australia, Brazil,Colombia,Peru)%>%   dplyr::group_by(country, type) %>% dplyr::summarise(n=n()) 
-library(tidyr)
-result_count = result_count %>% spread(key='type', value='n')
-
-write.table(result_count, "C:/Users/afeve/Documents/Tutorials/Geneset/HLA dataset/output2.txt",
+write.table(result, "C:/Users/afeve/Documents/Tutorials/Geneset/HLA dataset/output3.txt",
             sep = "\t",
             row.names = F)
