@@ -1,7 +1,7 @@
 Regression1.Car Price
 ================
 JayHKim
-2020-07-06
+2020-07-07
 
 # Introduce
 
@@ -2267,28 +2267,433 @@ Ridge / Lasso / Elastic net regression 은 모두 기본적으로 최소제곱�
   - sample size \> parameter size 인 경우 Ridge 실행, L2 panelty =\> 정보를 압축하기
     위한 과정
 
-편의를 위해 아래 부터는 parameter 튜닝을 위해 caret package를 사용하겠습니다.
+일반화 선형 같은 경우에는 parameter tuning이 필요 없이 최소제곱이 parameter를 찾게 됩니다. 하지만 이후
+모델 부터는 Hyper Parameter를 찾는 과정이 필요하게 되는데 이때 사용되는 패키지가 caret
+package입니다. caret package는 이외에도 전처리와 모델링에 관한 꽤 방대한 방법론을 자랑합니다.
+사용법을 간략히 설명한후 위에서 언급한 나머지 회귀분석 모델을 수행해보겠습니다.
+
+지원하는 모델은 약 240개 가량 됩니다.
+
+``` r
+library(caret)
+names(getModelInfo()) #사용 가능한 알고리즘 리스트
+```
+
+    ##   [1] "ada"                 "AdaBag"              "AdaBoost.M1"        
+    ##   [4] "adaboost"            "amdai"               "ANFIS"              
+    ##   [7] "avNNet"              "awnb"                "awtan"              
+    ##  [10] "bag"                 "bagEarth"            "bagEarthGCV"        
+    ##  [13] "bagFDA"              "bagFDAGCV"           "bam"                
+    ##  [16] "bartMachine"         "bayesglm"            "binda"              
+    ##  [19] "blackboost"          "blasso"              "blassoAveraged"     
+    ##  [22] "bridge"              "brnn"                "BstLm"              
+    ##  [25] "bstSm"               "bstTree"             "C5.0"               
+    ##  [28] "C5.0Cost"            "C5.0Rules"           "C5.0Tree"           
+    ##  [31] "cforest"             "chaid"               "CSimca"             
+    ##  [34] "ctree"               "ctree2"              "cubist"             
+    ##  [37] "dda"                 "deepboost"           "DENFIS"             
+    ##  [40] "dnn"                 "dwdLinear"           "dwdPoly"            
+    ##  [43] "dwdRadial"           "earth"               "elm"                
+    ##  [46] "enet"                "evtree"              "extraTrees"         
+    ##  [49] "fda"                 "FH.GBML"             "FIR.DM"             
+    ##  [52] "foba"                "FRBCS.CHI"           "FRBCS.W"            
+    ##  [55] "FS.HGD"              "gam"                 "gamboost"           
+    ##  [58] "gamLoess"            "gamSpline"           "gaussprLinear"      
+    ##  [61] "gaussprPoly"         "gaussprRadial"       "gbm_h2o"            
+    ##  [64] "gbm"                 "gcvEarth"            "GFS.FR.MOGUL"       
+    ##  [67] "GFS.LT.RS"           "GFS.THRIFT"          "glm.nb"             
+    ##  [70] "glm"                 "glmboost"            "glmnet_h2o"         
+    ##  [73] "glmnet"              "glmStepAIC"          "gpls"               
+    ##  [76] "hda"                 "hdda"                "hdrda"              
+    ##  [79] "HYFIS"               "icr"                 "J48"                
+    ##  [82] "JRip"                "kernelpls"           "kknn"               
+    ##  [85] "knn"                 "krlsPoly"            "krlsRadial"         
+    ##  [88] "lars"                "lars2"               "lasso"              
+    ##  [91] "lda"                 "lda2"                "leapBackward"       
+    ##  [94] "leapForward"         "leapSeq"             "Linda"              
+    ##  [97] "lm"                  "lmStepAIC"           "LMT"                
+    ## [100] "loclda"              "logicBag"            "LogitBoost"         
+    ## [103] "logreg"              "lssvmLinear"         "lssvmPoly"          
+    ## [106] "lssvmRadial"         "lvq"                 "M5"                 
+    ## [109] "M5Rules"             "manb"                "mda"                
+    ## [112] "Mlda"                "mlp"                 "mlpKerasDecay"      
+    ## [115] "mlpKerasDecayCost"   "mlpKerasDropout"     "mlpKerasDropoutCost"
+    ## [118] "mlpML"               "mlpSGD"              "mlpWeightDecay"     
+    ## [121] "mlpWeightDecayML"    "monmlp"              "msaenet"            
+    ## [124] "multinom"            "mxnet"               "mxnetAdam"          
+    ## [127] "naive_bayes"         "nb"                  "nbDiscrete"         
+    ## [130] "nbSearch"            "neuralnet"           "nnet"               
+    ## [133] "nnls"                "nodeHarvest"         "null"               
+    ## [136] "OneR"                "ordinalNet"          "ordinalRF"          
+    ## [139] "ORFlog"              "ORFpls"              "ORFridge"           
+    ## [142] "ORFsvm"              "ownn"                "pam"                
+    ## [145] "parRF"               "PART"                "partDSA"            
+    ## [148] "pcaNNet"             "pcr"                 "pda"                
+    ## [151] "pda2"                "penalized"           "PenalizedLDA"       
+    ## [154] "plr"                 "pls"                 "plsRglm"            
+    ## [157] "polr"                "ppr"                 "PRIM"               
+    ## [160] "protoclass"          "qda"                 "QdaCov"             
+    ## [163] "qrf"                 "qrnn"                "randomGLM"          
+    ## [166] "ranger"              "rbf"                 "rbfDDA"             
+    ## [169] "Rborist"             "rda"                 "regLogistic"        
+    ## [172] "relaxo"              "rf"                  "rFerns"             
+    ## [175] "RFlda"               "rfRules"             "ridge"              
+    ## [178] "rlda"                "rlm"                 "rmda"               
+    ## [181] "rocc"                "rotationForest"      "rotationForestCp"   
+    ## [184] "rpart"               "rpart1SE"            "rpart2"             
+    ## [187] "rpartCost"           "rpartScore"          "rqlasso"            
+    ## [190] "rqnc"                "RRF"                 "RRFglobal"          
+    ## [193] "rrlda"               "RSimca"              "rvmLinear"          
+    ## [196] "rvmPoly"             "rvmRadial"           "SBC"                
+    ## [199] "sda"                 "sdwd"                "simpls"             
+    ## [202] "SLAVE"               "slda"                "smda"               
+    ## [205] "snn"                 "sparseLDA"           "spikeslab"          
+    ## [208] "spls"                "stepLDA"             "stepQDA"            
+    ## [211] "superpc"             "svmBoundrangeString" "svmExpoString"      
+    ## [214] "svmLinear"           "svmLinear2"          "svmLinear3"         
+    ## [217] "svmLinearWeights"    "svmLinearWeights2"   "svmPoly"            
+    ## [220] "svmRadial"           "svmRadialCost"       "svmRadialSigma"     
+    ## [223] "svmRadialWeights"    "svmSpectrumString"   "tan"                
+    ## [226] "tanSearch"           "treebag"             "vbmpRadial"         
+    ## [229] "vglmAdjCat"          "vglmContRatio"       "vglmCumulative"     
+    ## [232] "widekernelpls"       "WM"                  "wsrf"               
+    ## [235] "xgbDART"             "xgbLinear"           "xgbTree"            
+    ## [238] "xyf"
+
+선형회귀 분석 같은 경우에는 tuning할 hyper parameter가 intercept 뿐인데, 이미 모델내에 있는 것으로
+충분하기 때문에 생략하였고(절편이 변하는거라 모델의 기울기는 변화가 없음.),나머지 모델들은 parameter를 수정함으로
+인해서 모델의 모양이 크게 변하기 때문에 이러한 진행이 필요합니다. 회귀분석을 제외하고는 거의 모든 모델이 hyper
+parameter 튜닝이 필요합니다.
+
+``` r
+modelLookup("lm") #튜닝 가능한 parameter 체크
+```
+
+    ##   model parameter     label forReg forClass probModel
+    ## 1    lm intercept intercept   TRUE    FALSE     FALSE
+
+``` r
+modelLookup("glmnet") #튜닝 가능한 parameter 체크
+```
+
+    ##    model parameter                    label forReg forClass probModel
+    ## 1 glmnet     alpha        Mixing Percentage   TRUE     TRUE      TRUE
+    ## 2 glmnet    lambda Regularization Parameter   TRUE     TRUE      TRUE
+
+위에서 모델에서 튜닝해야하는 정보를 보면 알수 있듯이, glmnet 함수를 사용하는데 lambda 와 alpha 값 두가지의
+hyper parameter수정이 필요합니다. 하지만 우리가 사용하는 ridge 모델은 alpha값이 0으로 지정한 모델이고,
+lasso는 alpha 값이 1로 지정된 모델이기 때문에 나머지 파라미터인 lambda 값에 대한 튜닝만이 필요합니다.
+elastic 모델은 ridge와 lasso를 합친 모델로 보시면 되고 이때 두개의 parameter모두 튜닝이 필요합니다. 그럼
+살펴 보겠습니다.
+
+튜닝을 하기에 앞서 방법론이 필요합니다. 다행히도 caret package는 trainControl()이라는 함수를 통해서 이를
+지정하여 사용할수 있도록 지원합니다. trainControl은 method와 반복수, 폴드 값, 찾는 방법 등을 지정 합니다.
+method는 그냥 cross validation을 사용할 것인지, repeated cross validation을 사용할
+것인지를 나타냅니다. number는 몇개로 나누어서 진행할 것인지 repeats는 반복수 search는
+parameter를 찾는 방법으로 customGrid는 직접 그 값을 지정할 것인지, randomGrid는 랜덤하게 수행할 것인지
+등을 나타냅니다. grid를 지정하지 않으면 기본적으로 3^(변수 개수) 만큼 수행됩니다. 이를 막고자 한다면
+tuneLength를 지정하여 parameter 개수를 지정해 줄수 있습니다.
+
+``` r
+customGrid1 <- expand.grid(alpha=0,lambda = seq(0, 0.1, 0.01))
+fitControl1 <- trainControl(method = "cv", number = 5)
+
+customGrid2 <- expand.grid(alpha=1,lambda = seq(0.001,0.01,0.001))
+fitControl2 <- trainControl(method = "cv", number = 5)
+
+fitControl3 <- trainControl(method = "cv", number = 5, search = "random")
+```
+
+customGrid와 randomGrid를 모두 수행해보기 위해서 fitControl을 두가지로 지정하였습니다. 첫번째의 경우
+alpha를 0으로 지정했기 때문에 ridge model을 두번째의 경우 alpha값을 지정해주지 않았기 때문에
+elasticnet 모델이 될거로 보입니다.
 
 ``` r
 library(glmnet)
 car_price$하이브리드 <- car_price$하이브리드 %>% as.numeric()
 car_price$변속기 <- car_price$변속기 %>% as.numeric()
-fit_ridge <- glmnet(car_price %>% dplyr::select(m_연비, m_마력, 하이브리드, m_중량, 변속기) %>%as.matrix() , 
-                    car_price$log_가격%>%as.matrix()%>% as.numeric(), family='gaussian', alpha = 0 ) #lambda = lambda
+
+
+fit_ridge <- train(car_price %>% dplyr::select(m_연비, m_마력, 하이브리드, m_중량, 변속기) %>%as.matrix() , 
+                   car_price$log_가격%>%as.matrix()%>% as.numeric(),method = "glmnet", family='gaussian' ,
+                   trControl = fitControl1, tuneGrid=customGrid1, metric='mse',verbose = F)
+
+fit_lasso <- train(car_price %>% dplyr::select(m_연비, m_마력, 하이브리드, m_중량, 변속기) %>%as.matrix() , 
+                   car_price$log_가격%>%as.matrix()%>% as.numeric(),method = "glmnet", family='gaussian' ,
+                   trControl = fitControl2, tuneGrid=customGrid2, metric='mse',verbose = F)
+
+
+fit_elastic <- train(car_price %>% dplyr::select(m_연비, m_마력, 하이브리드, m_중량, 변속기) %>%as.matrix() , 
+                   car_price$log_가격%>%as.matrix()%>% as.numeric(),method = "glmnet", family='gaussian' ,
+                   trControl = fitControl3, metric='mse',  tuneLength = 10,verbose = F)
 ```
 
+ridge, lasso 모델의 경우 alpha 값이 0과 1로 지정되기 때문에 customGrid를 주어서 수행하였고,
+elasticnet의 경우 alpha값의 지정이 없기 때문에 randomGrid를 주고 Tune이 진행되는 개수만 지정해주었습니다
+
 ``` r
-library(glmnet)
+grid.arrange(plot(fit_ridge, xvar="lambda"),
+             plot(fit_lasso, xvar="lambda"),
+             plot(fit_elastic, xvar="lambda"), ncol=3)
+```
+
+<img src="car_price_files/figure-gfm/unnamed-chunk-128-1.jpeg" style="display: block; margin: auto;" />
+세 그래프를 비교해보니 최적 parameter에 다소 차이가 존재합니다.
+
+``` r
+# best parameter
+fit_ridge$bestTune
+```
+
+    ##    alpha lambda
+    ## 10     0   0.01
+
+``` r
+fit_lasso$bestTune
+```
+
+    ##   alpha lambda
+    ## 1     1  0.001
+
+``` r
+fit_elastic$bestTune
+```
+
+    ##        alpha      lambda
+    ## 2 0.08100726 0.001360738
+
+``` r
+# best coefficient
+coef(fit_ridge$finalModel, fit_ridge$bestTune$lambda)
+```
+
+    ## 6 x 1 sparse Matrix of class "dgCMatrix"
+    ##                      1
+    ## (Intercept)  6.4097968
+    ## m_연비      -0.2468579
+    ## m_마력       1.7674177
+    ## 하이브리드   0.3074695
+    ## m_중량       0.5078567
+    ## 변속기       0.1128935
+
+``` r
+coef(fit_lasso$finalModel, fit_lasso$bestTune$lambda)
+```
+
+    ## 6 x 1 sparse Matrix of class "dgCMatrix"
+    ##                      1
+    ## (Intercept)  6.2818646
+    ## m_연비      -0.3709460
+    ## m_마력       1.9849199
+    ## 하이브리드   0.3203238
+    ## m_중량       0.5352954
+    ## 변속기       0.1066406
+
+``` r
+coef(fit_elastic$finalModel, fit_elastic$bestTune$lambda)
+```
+
+    ## 6 x 1 sparse Matrix of class "dgCMatrix"
+    ##                      1
+    ## (Intercept)  6.2759725
+    ## m_연비      -0.3736920
+    ## m_마력       1.9738151
+    ## 하이브리드   0.3211027
+    ## m_중량       0.5419101
+    ## 변속기       0.1090125
+
+``` r
+summary(fit_ridge)
+```
+
+    ##             Length Class      Mode     
+    ## a0          100    -none-     numeric  
+    ## beta        500    dgCMatrix  S4       
+    ## df          100    -none-     numeric  
+    ## dim           2    -none-     numeric  
+    ## lambda      100    -none-     numeric  
+    ## dev.ratio   100    -none-     numeric  
+    ## nulldev       1    -none-     numeric  
+    ## npasses       1    -none-     numeric  
+    ## jerr          1    -none-     numeric  
+    ## offset        1    -none-     logical  
+    ## call          6    -none-     call     
+    ## nobs          1    -none-     numeric  
+    ## lambdaOpt     1    -none-     numeric  
+    ## xNames        5    -none-     character
+    ## problemType   1    -none-     character
+    ## tuneValue     2    data.frame list     
+    ## obsLevels     1    -none-     logical  
+    ## param         2    -none-     list
+
+``` r
+summary(fit_lasso)
+```
+
+    ##             Length Class      Mode     
+    ## a0           66    -none-     numeric  
+    ## beta        330    dgCMatrix  S4       
+    ## df           66    -none-     numeric  
+    ## dim           2    -none-     numeric  
+    ## lambda       66    -none-     numeric  
+    ## dev.ratio    66    -none-     numeric  
+    ## nulldev       1    -none-     numeric  
+    ## npasses       1    -none-     numeric  
+    ## jerr          1    -none-     numeric  
+    ## offset        1    -none-     logical  
+    ## call          6    -none-     call     
+    ## nobs          1    -none-     numeric  
+    ## lambdaOpt     1    -none-     numeric  
+    ## xNames        5    -none-     character
+    ## problemType   1    -none-     character
+    ## tuneValue     2    data.frame list     
+    ## obsLevels     1    -none-     logical  
+    ## param         2    -none-     list
+
+``` r
+summary(fit_elastic)
+```
+
+    ##             Length Class      Mode     
+    ## a0           83    -none-     numeric  
+    ## beta        415    dgCMatrix  S4       
+    ## df           83    -none-     numeric  
+    ## dim           2    -none-     numeric  
+    ## lambda       83    -none-     numeric  
+    ## dev.ratio    83    -none-     numeric  
+    ## nulldev       1    -none-     numeric  
+    ## npasses       1    -none-     numeric  
+    ## jerr          1    -none-     numeric  
+    ## offset        1    -none-     logical  
+    ## call          6    -none-     call     
+    ## nobs          1    -none-     numeric  
+    ## lambdaOpt     1    -none-     numeric  
+    ## xNames        5    -none-     character
+    ## problemType   1    -none-     character
+    ## tuneValue     2    data.frame list     
+    ## obsLevels     1    -none-     logical  
+    ## param         2    -none-     list
+
+결과값을 보니 RMSE의 분포가 대략 비슷하게 나온것으로 보입니다.
+
+``` r
+caret::postResample(pred = exp(predict(fit_ridge, car_price %>% dplyr::select(m_연비, m_마력, 하이브리드, m_중량, 변속기) %>%as.matrix() )), obs = car_price$가격)
+```
+
+    ##        RMSE    Rsquared         MAE 
+    ## 639.2327755   0.9273457 315.5496516
+
+``` r
+caret::postResample(pred = exp(predict(fit_lasso, car_price %>% dplyr::select(m_연비, m_마력, 하이브리드, m_중량, 변속기) %>%as.matrix() )), obs = car_price$가격)
+```
+
+    ##        RMSE    Rsquared         MAE 
+    ## 506.9029878   0.9385216 281.9954856
+
+``` r
+caret::postResample(pred = exp(predict(fit_elastic, car_price %>% dplyr::select(m_연비, m_마력, 하이브리드, m_중량, 변속기) %>%as.matrix() )), obs = car_price$가격)
+```
+
+    ##        RMSE    Rsquared         MAE 
+    ## 512.1191048   0.9380499 283.2085849
+
+결과값을 보니 RMSE의 분포가 대략 비슷하게 나온것으로 보입니다.
+
+``` r
+fit_ridge <- glmnet(car_price %>% dplyr::select(m_연비, m_마력, 하이브리드, m_중량, 변속기) %>%as.matrix() , 
+                    car_price$log_가격%>%as.matrix()%>% as.numeric(), family='gaussian', alpha = 0 ) #lambda = lambda
 
 fit_lasso <- glmnet(car_price%>% dplyr::select(m_연비,m_마력,하이브리드,m_중량,변속기)%>%as.matrix(), 
                     car_price$log_가격%>%as.matrix(), family="gaussian", alpha = 1)#lambda = lambda
-```
 
-``` r
-library(glmnet)
 fit_elastic <- glmnet(car_price%>% dplyr::select(m_연비,m_마력,하이브리드,m_중량,변속기)%>%as.matrix(), 
                     car_price$log_가격%>%as.matrix(), family="gaussian", alpha = .5)#lambda = lambda
 ```
+
+``` r
+par(mfrow=c(3,1))
+# For plotting options, type '?plot.glmnet' in R console
+plot(fit_ridge, xvar="lambda")
+plot(fit_lasso, xvar="lambda")
+plot(fit_elastic, xvar="lambda")
+```
+
+<img src="car_price_files/figure-gfm/unnamed-chunk-132-1.jpeg" style="display: block; margin: auto;" />
+
+``` r
+summary(fit_ridge)
+```
+
+    ##           Length Class     Mode   
+    ## a0        100    -none-    numeric
+    ## beta      500    dgCMatrix S4     
+    ## df        100    -none-    numeric
+    ## dim         2    -none-    numeric
+    ## lambda    100    -none-    numeric
+    ## dev.ratio 100    -none-    numeric
+    ## nulldev     1    -none-    numeric
+    ## npasses     1    -none-    numeric
+    ## jerr        1    -none-    numeric
+    ## offset      1    -none-    logical
+    ## call        5    -none-    call   
+    ## nobs        1    -none-    numeric
+
+``` r
+summary(fit_lasso)
+```
+
+    ##           Length Class     Mode   
+    ## a0         66    -none-    numeric
+    ## beta      330    dgCMatrix S4     
+    ## df         66    -none-    numeric
+    ## dim         2    -none-    numeric
+    ## lambda     66    -none-    numeric
+    ## dev.ratio  66    -none-    numeric
+    ## nulldev     1    -none-    numeric
+    ## npasses     1    -none-    numeric
+    ## jerr        1    -none-    numeric
+    ## offset      1    -none-    logical
+    ## call        5    -none-    call   
+    ## nobs        1    -none-    numeric
+
+``` r
+summary(fit_elastic)
+```
+
+    ##           Length Class     Mode   
+    ## a0         69    -none-    numeric
+    ## beta      345    dgCMatrix S4     
+    ## df         69    -none-    numeric
+    ## dim         2    -none-    numeric
+    ## lambda     69    -none-    numeric
+    ## dev.ratio  69    -none-    numeric
+    ## nulldev     1    -none-    numeric
+    ## npasses     1    -none-    numeric
+    ## jerr        1    -none-    numeric
+    ## offset      1    -none-    logical
+    ## call        5    -none-    call   
+    ## nobs        1    -none-    numeric
+
+``` r
+caret::postResample(pred = exp(predict(fit_ridge, s=fit_ridge$lambda, car_price %>% dplyr::select(m_연비, m_마력, 하이브리드, m_중량, 변속기) %>%as.matrix() )), obs = car_price$가격)
+```
+
+    ##     RMSE Rsquared      MAE 
+    ##       NA       NA       NA
+
+``` r
+caret::postResample(pred = exp(predict(fit_lasso, s=fit_lasso$lambda, car_price%>% dplyr::select(m_연비, m_마력, 하이브리드, m_중량, 변속기) %>%as.matrix())), obs = car_price$가격)
+```
+
+    ##     RMSE Rsquared      MAE 
+    ##       NA       NA       NA
+
+``` r
+caret::postResample(pred = exp(predict(fit_elastic, s=fit_elastic$lambda, car_price%>% dplyr::select(m_연비, m_마력, 하이브리드, m_중량, 변속기) %>%as.matrix())), obs = car_price$가격)
+```
+
+    ##     RMSE Rsquared      MAE 
+    ##       NA       NA       NA
 
 Robust / Quantile regression =\> 이상치를 해결하기 위한 목적으로 사용되며
 

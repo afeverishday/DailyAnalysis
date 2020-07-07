@@ -1113,6 +1113,52 @@ summary(fwd.model)
 
 ```
 
+독립변수간의 상호작용이 있는 회귀분석
+ 독립변수간의 상호작용이 있는 경우 회귀분석 해당 변수들간의 상호작용항을 포함시킬 필요가 있다. 독립변수가 A, B  종속변수가 C인 경우 서로 상호작용이 있을 때 입력 형태는 C ~ A+B+ A:B 로 나타낼수 있다. 이때 독립변수 항이 총 세개가 되는데 이를 간단하게 표현하면 A*B로 표현할수 있다.
+ 
+먼저 상호작용이 존재하는지 확인이 필요한데, 그래프를 그려서 이를 어느정도 확인할수 있다. 한 변수가 범주형이고, 다른변수가 연속형인 경우에는 그래프를 그리는게 생각보다 간단하다. 마력과 종류의 값으로 이를 보면 된다.첫번째 그래프가 그것이다. 두번째 그래프드는 두 변수 모두 연속형일 경우인데, 이때는 이를 그리는 것이 쉽지 않다. 따라서 웹에서 찾아보던 중 잘 정리된 함수가 있어 이를 대체해서 사용하였다. 출처는 https://rpubs.com/cardiomoon/153265 이다. 함수 사용법은, x=1, x=2냐에 따라 설명변수가 정해지고 벨류 값을 지정가능하다. 함수에스는 qunatile 값을 이용해 회귀직선을 그려주고 이를 통해서 상호작용을 판단한다.
+
+
+```{r}
+ggplot(car_price,aes(x=m_마력, y=가격,colour=종류) )+ geom_point( )+
+   stat_smooth(method=lm)
+
+
+ggEffect=function(fit,x=1,probs=c(0.25,0.5,0.75),point=TRUE,xvalue=NULL){
+        df=fit$model
+        coef=fit$coef
+        name=colnames(df)
+    
+        p<-ggplot(data=df,aes_string(x=name[1+x],y=name[1]))
+        if(is.null(xvalue)) A=quantile(df[[4-x]],probs,na.rm=TRUE)
+        else A=xvalue
+        labels=as.character(A)
+        intercept=coef[1]+coef[4-x]*A
+        slope=coef[1+x]+coef[4]*A
+        colour=rainbow(length(A))
+        df1=data.frame(A,intercept,slope,colour)
+        if(point) p<-p+geom_point()
+        p<-p+geom_abline(data=df1,aes(slope=slope,intercept=intercept,colour=colour))
+        p<-p+scale_colour_discrete(labels=labels)+labs(colour=name[4-x])
+        p
+ 
+}   
+
+ggEffect(fit4, x=2,xvalue=c(0.26, 0.50, 0.63))
+
+``` 
+ 
+ 
+```{r}
+fit4 <-lm(log_가격~ m_연비 + m_마력 + 하이브리드 + m_중량 + 변속기 + m_마력:m_중량, data=car_price)
+summary(fit4)
+vif(fit4)
+```
+
+
+
+
+
 모델 성능측정
  모델의 성능 평가는 caret package에서 제공하는 postResample()함수의 RMSE, Rsquared, MAE 등을 함께 계산할수 있다. 
 ```{r}
@@ -1167,28 +1213,151 @@ caret::postResample(pred = median(car_price$가격), obs = car_price$가격) #�
 => 정보를 압축하기 위한 과정
 
 
-편의를 위해 아래 부터는 parameter 튜닝을 위해 caret package를 사용하겠습니다.
+일반화 선형 같은 경우에는 parameter tuning이 필요 없이 최소제곱이 parameter를 찾게 됩니다. 하지만 이후 모델 부터는 Hyper Parameter를 찾는 과정이 필요하게 되는데 이때 사용되는 패키지가 caret package입니다. caret package는 이외에도 전처리와 모델링에 관한 꽤 방대한 방법론을 자랑합니다. 사용법을 간략히 설명한후 위에서 언급한 나머지 회귀분석 모델을 수행해보겠습니다.
+
+지원하는 모델은 약 240개 가량 됩니다.
+```{r}
+library(caret)
+names(getModelInfo()) #사용 가능한 알고리즘 리스트
+```
+
+선형회귀 분석 같은 경우에는 tuning할 hyper parameter가 intercept 뿐인데, 이미 모델내에 있는 것으로 충분하기 때문에 생략하였고(절편이 변하는거라 모델의 기울기는 변화가 없음.),나머지 모델들은 parameter를 수정함으로 인해서 모델의 모양이 크게 변하기 때문에 이러한 진행이 필요합니다. 회귀분석을 제외하고는 거의 모든 모델이 hyper parameter 튜닝이 필요합니다.
+
+```{r}
+modelLookup("lm") #튜닝 가능한 parameter 체크
+modelLookup("glmnet") #튜닝 가능한 parameter 체크
+```
+위에서 모델에서 튜닝해야하는 정보를 보면 알수 있듯이, glmnet 함수를 사용하는데 lambda 와 alpha 값 두가지의 hyper parameter수정이 필요합니다. 하지만 우리가 사용하는 ridge 모델은 alpha값이 0으로 지정한 모델이고, lasso는 alpha 값이 1로 지정된 모델이기 때문에 나머지 파라미터인 lambda 값에 대한 튜닝만이 필요합니다. elastic 모델은 ridge와 lasso를 합친 모델로 보시면 되고 이때 두개의 parameter모두 튜닝이 필요합니다. 그럼 살펴 보겠습니다. 
+
+튜닝을 하기에 앞서 방법론이 필요합니다. 다행히도 caret package는 trainControl()이라는 함수를 통해서 이를 지정하여 사용할수 있도록 지원합니다. trainControl은 method와 반복수, 폴드 값, 찾는 방법 등을 지정 합니다. 
+method는 그냥 cross validation을 사용할 것인지, repeated cross validation을 사용할 것인지를 나타냅니다.
+number는 몇개로 나누어서 진행할 것인지
+repeats는 반복수
+search는 parameter를 찾는 방법으로 customGrid는 직접 그 값을 지정할 것인지, randomGrid는 랜덤하게 수행할 것인지 등을 나타냅니다. grid를 지정하지 않으면 기본적으로 3^(변수 개수) 만큼 수행됩니다. 이를 막고자 한다면 tuneLength를 지정하여 parameter 개수를 지정해 줄수 있습니다.
+
+```{r}
+customGrid1 <- expand.grid(alpha=0, lambda = seq(0, 1, 0.01))
+fitControl1 <- trainControl(method = "cv", number = 5)
+
+customGrid2 <- expand.grid(alpha=1, lambda = seq(0.001,0.01,0.001))
+fitControl2 <- trainControl(method = "cv", number = 5)
+
+fitControl3 <- trainControl(method = "cv", number = 5, search = "random")
+```
+customGrid와 randomGrid를 모두 수행해보기 위해서 fitControl을 두가지로 지정하였습니다. 첫번째의 경우 alpha를 0으로 지정했기 때문에 ridge model을 두번째의 경우 alpha값을 지정해주지 않았기 때문에 elasticnet 모델이 될거로 보입니다.
+
+
 ```{r}
 library(glmnet)
 car_price$하이브리드 <- car_price$하이브리드 %>% as.numeric()
 car_price$변속기 <- car_price$변속기 %>% as.numeric()
-fit_ridge <- glmnet(car_price %>% dplyr::select(m_연비, m_마력, 하이브리드, m_중량, 변속기) %>%as.matrix() , 
-                    car_price$log_가격%>%as.matrix()%>% as.numeric(), family='gaussian', alpha = 0 ) #lambda = lambda
 
-fit_lasso <- glmnet(car_price%>% dplyr::select(m_연비,m_마력,하이브리드,m_중량,변속기)%>%as.matrix(), 
-                    car_price$log_가격%>%as.matrix(), family="gaussian", alpha = 1)#lambda = lambda
 
-fit_elastic <- glmnet(car_price%>% dplyr::select(m_연비,m_마력,하이브리드,m_중량,변속기)%>%as.matrix(), 
-                    car_price$log_가격%>%as.matrix(), family="gaussian", alpha = .5)#lambda = lambda
+fit_ridge <- train(car_price %>% dplyr::select(m_연비, m_마력, 하이브리드, m_중량, 변속기) %>%as.matrix() , 
+                   car_price$log_가격%>%as.matrix()%>% as.numeric(),method = "glmnet", family='gaussian' ,
+                   trControl = fitControl1, tuneGrid=customGrid1, metric='mse',verbose = F)
+
+fit_lasso <- train(car_price %>% dplyr::select(m_연비, m_마력, 하이브리드, m_중량, 변속기) %>%as.matrix() , 
+                   car_price$log_가격%>%as.matrix()%>% as.numeric(),method = "glmnet", family='gaussian' ,
+                   trControl = fitControl2, tuneGrid=customGrid2, metric='mse',verbose = F)
+
+
+fit_elastic <- train(car_price %>% dplyr::select(m_연비, m_마력, 하이브리드, m_중량, 변속기) %>%as.matrix() , 
+                   car_price$log_가격%>%as.matrix()%>% as.numeric(),method = "glmnet", family='gaussian' ,
+                   trControl = fitControl3, metric='mse',  tuneLength = 10,verbose = F)
 
 ```
+ridge, lasso 모델의 경우 alpha 값이 0과 1로 지정되기 때문에 customGrid를 주어서 수행하였고, elasticnet의 경우 alpha값의 지정이 없기 때문에 randomGrid를 주고 Tune이 진행되는 개수만 지정해주었습니다
+
+```{r}
+grid.arrange(plot(fit_ridge, xvar="lambda"),
+             plot(fit_lasso, xvar="lambda"),
+             plot(fit_elastic, xvar="lambda"), ncol=3)
+
+```
+세 그래프를 통해서 비교해보니 최적 parameter에 따른 RMSE를 확인할 수 있습니다.보통은 이렇게 정해지면 parameter를 더 세부적으로 수정합니다.  
+
+```{r}
+# best parameter
+fit_ridge$bestTune
+fit_lasso$bestTune
+fit_elastic$bestTune
+# best coefficient
+coef(fit_ridge$finalModel, fit_ridge$bestTune$lambda)
+coef(fit_lasso$finalModel, fit_lasso$bestTune$lambda)
+coef(fit_elastic$finalModel, fit_elastic$bestTune$lambda)
+
+summary(fit_ridge)
+summary(fit_lasso)
+summary(fit_elastic)
+```
+당연한 이야기겠지만 결과값을 보니 RMSE의 분포가 모두 다르게 나오는 걸로 보이네요. 
+
+
+```{r}
+caret::postResample(pred = exp(predict(fit_ridge, car_price %>% dplyr::select(m_연비, m_마력, 하이브리드, m_중량, 변속기) %>%as.matrix() )), obs = car_price$가격)
+
+caret::postResample(pred = exp(predict(fit_lasso, car_price %>% dplyr::select(m_연비, m_마력, 하이브리드, m_중량, 변속기) %>%as.matrix() )), obs = car_price$가격)
+
+caret::postResample(pred = exp(predict(fit_elastic, car_price %>% dplyr::select(m_연비, m_마력, 하이브리드, m_중량, 변속기) %>%as.matrix() )), obs = car_price$가격)
+```
+결과를 확인해 보았을때 가장 좋은 모델은 lasso로 나옵니다. parameter를 튜닝해보면 좀더 다른값이 나올수도 있겠지만 여기서는 생략하고 다른 모델들을 더 살펴보겠습니다.
+
+
+다음으로 살펴볼 회귀분석은 이상치에 영향을 덜 받도록 설계된 Robust Regression과 Quantile Regression입니다.
 
  Robust / Quantile regression
  => 이상치를 해결하기 위한 목적으로 사용되며
  
- 다항 회귀 (Polynomial regression) /Generalized Additive Model (GAM)
+ Robust는 이상치가 포함된 경우 최소제곱에 사용되는 잔차의 제곱합이 커지거나 작아지는 실제 한 데이터를 포함함으로 인해서 생기는 왜곡을 처리하기 위해 고안되었습니다. 방법은 잔차의 제곱대신 절대값의 합을 최소로 하도록 계수를 추정합니다. 방법은 의외로 간단합니다. MASS 패키지의 rlm()을 사용하면 됩니다. 이때 psi라는 아웃라이어 가중치를 정할수 있는데 가능한 값은 psi.huber, psi.hampel, psi.bisquare 등 입니다. 그럼 이상치인데, 왜 이를 포함하는지에 대한 의문이 생길수도 있는데요. 데이터 마다 다르긴 하지만, 수치가 다른 값들에 비해 매우 크기는 하지만 이 값이 필요한 경우도 종종 생깁니다. 음.. 예를 들고 싶은데 생각나는게 없네요. 나중에 추가하겠습니다.
+ 
+```{r}
+library(MASS)
+fit_robust <-rlm(log_가격~ m_연비+m_마력+하이브리드+m_중량+변속기, data=car_price, psi=psi.bisquare)
+summary(fit_robust)
+
+caret::postResample(pred = exp(predict(fit_robust, car_price %>% dplyr::select(m_연비, m_마력, 하이브리드, m_중량, 변속기) )), obs = car_price$가격)
+
+```
+ 
+ 다음은 Quantile Regression입니다. Qunatile Regression은 이름에서 알수 있듯이 분위수를 기준으로 합니다. 선형 회귀가 평균을 추정하는 방식이었다면, Quantile은 특정 분위수를 추정하는 방법으로 50% 중앙값을 추정해서 평균 대신 사용한다면 이상치에서 상대적으로 자유로울수 있을겁니다. 방법은 간단합니다. quanreg 패키지의 qr함수를 사용하면 됩니다. 여기서 tau는 우리가 관심있는 quantile을 입니다.
+ 
+```{r}
+library(quantreg)
+fit_quantile <-rq(log_가격~ m_연비+m_마력+하이브리드+m_중량+변속기, data=car_price, tau=0.5)
+summary(fit_quantile)
+
+caret::postResample(pred = exp(predict(fit_quantile, car_price %>% dplyr::select(m_연비, m_마력, 하이브리드, m_중량, 변속기) )), obs = car_price$가격)
+```
+
+
+ 다항 회귀 (Polynomial regression) / GAM(Generalized Additive Model)
  => 독립 변수와 종속 변수가 선형 관계가 아닌 경우
  
+ 다항 회귀는 항이 단순히 여러 개 있는게 아니라 독립변수의 이차식이나 삼차식이 종속변수와 관계가 있을경우에 사용되는 모델입니다. 다항회귀는 특별한 함수가 존재하지 않습니다. 독립변수를 제곱형태와 같이 변형해서 사용하면 됩니다. 일일이 입력해서 쓰기보다 poly 함수를 써서 해당 차수까지의 항을 포함하도록 도와줍니다. 여기서는 예를 들기위해서 연비항을 3차식까지 포함하였습니다.
+
+```{r}
+
+#fit_poly <- lm(log_가격~ m_연비+I(m_연비^2)+I(m_연비^3)+ m_마력+하이브리드+m_중량+변속기, data=car_price)
+#위와 같이 표핸도 된다. 주의할 사항은 그대로 ^2으로 넣으면 안된다.
+
+fit_poly <- lm(log_가격~ poly(m_연비,3, raw=T)+ m_마력+하이브리드+m_중량+변속기, data=car_price)
+summary(fit_poly)
+
+caret::postResample(pred = exp(predict(fit_poly, car_price %>% dplyr::select(m_연비, m_마력, 하이브리드, m_중량, 변속기) )), obs = car_price$가격)
+```
+
+사실 다항 회귀는 GAM(Generalized Additive Model)의 방법중 하나입니다. GAM 회귀 모델은 독립변수를 함수를 이용하여 변형 후 선형결합한 모델입니다. 보통 이때 사용되는 함수들이 비선형 함수들이기 때문에 비선형 관계를 나타낼수 있는 겁니다. 함수의 종류에 따라 정말 다양한 형태가 나오기 때문에 일반화라는 단어를 사용합니다. GAM은 거의 모든 선형 결합이 가능하지만 독립변수 간의 상호작용은 포함하지 못해서 직접 포함시켜야 합니다. s ()는 스무딩 스플라인 피팅을위한 축약 형입니다. GAM관련 내용은 자세히 알지 못해 추후 업데이트 하겠습니다. 
+
+```{r}
+library(gam)
+fit_gam <- gam(log_가격~ m_연비+ m_마력+하이브리드+ m_중량+변속기, data=car_price)
+summary(fit_gam)
+
+caret::postResample(pred = exp(predict(fit_gam, car_price %>% dplyr::select(m_연비, m_마력, 하이브리드, m_중량, 변속기) )), obs = car_price$가격)
+```
+
+
  Generalized Linear Model (GLM)
  => 오차항의 확률분포가 정규분포가 아닌 경우
  
