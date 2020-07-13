@@ -14,14 +14,19 @@
 
 
 ## 1. Regression Problems
-
-- 주택 가격 예측
 - 
+- 주택 가격
+- TV 가격
+- 태양광 발전량 
 
 ## 2. Classification Problems
 
+- 붓꽃 종류
+- 와인등급
+- 대출 승인여부
 - 타이타닉 생존자 
-- 
+- 당뇨병 발병여부
+- 면역타입
 
 ## 3. Timeseries Problems
 
