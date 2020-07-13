@@ -29,7 +29,7 @@ for (i in 1:length(Africa)) {
                                skip = 2,
                                col_names = c('Line',	'Allele',	'Population',	'individuals',	'Frequency',	'Sample',	'Location'), # TRUE to use the first row as column names
                                col_types = "guess", # guess the types of columns
-                               na = "NA" )%>%  dplyr::filter((Frequency>=0.01)&(Sample>=50))%>%
+                               na = "NA" )%>%  dplyr::filter((Frequency>=0.05)&(Sample>=50))%>%
            dplyr::select(-Line,-individuals,-Population, -Location)%>% 
            mutate(Country=Africa[i],
                   Type=ifelse(substr(Allele,1,1)=='A', 'A',
@@ -94,7 +94,7 @@ for (i in 1:length(Asia)) {
                              skip = 2,
                              col_names = c('Line',	'Allele',	'Population',	'individuals',	'Frequency',	'Sample',	'Location'), # TRUE to use the first row as column names
                              col_types = "guess", # guess the types of columns
-                             na = "NA" )%>%  dplyr::filter((Frequency>=0.01)&(Sample>=50))%>%
+                             na = "NA" )%>%  dplyr::filter((Frequency>=0.05)&(Sample>=50))%>%
            dplyr::select(-Line,-individuals,-Population, -Location)%>% 
            mutate(Country=Asia[i],
                   Type=ifelse(substr(Allele,1,1)=='A', 'A',
@@ -178,7 +178,7 @@ for (i in 1:length(Europe)) {
                                skip = 2,
                                col_names = c('Line',	'Allele',	'Population',	'individuals',	'Frequency',	'Sample',	'Location'), # TRUE to use the first row as column names
                                col_types = "guess", # guess the types of columns
-                               na = "NA" )%>%  dplyr::filter((Frequency>=0.01)&(Sample>=50))%>%
+                               na = "NA" )%>%  dplyr::filter((Frequency>=0.05)&(Sample>=50))%>%
            dplyr::select(-Line,-individuals,-Population, -Location)%>% 
            mutate(Country=Europe[i],
                   Type=ifelse(substr(Allele,1,1)=='A', 'A',
@@ -201,7 +201,7 @@ assign("Serbia" ,read_excel("C:/Users/afeve/Documents/Tutorials/Geneset/HLA data
                             skip = 2,
                             col_names = c('Line',	'Allele',	'Population',	'individuals',	'Frequency',	'Sample'), # TRUE to use the first row as column names
                             col_types = "guess", # guess the types of columns
-                            na = "NA" )%>%  dplyr::filter((Frequency>=0.01)&(Sample>=50))%>%
+                            na = "NA" )%>%  dplyr::filter((Frequency>=0.05)&(Sample>=50))%>%
          dplyr::select(-Line,-individuals,-Population)%>% 
          mutate(Country="Serbia",
                 Type=ifelse(substr(Allele,1,1)=='A', 'A',
@@ -281,7 +281,7 @@ for (i in 1:length(NorthAmerica)) {
                                      skip = 2,
                                      col_names = c('Line',	'Allele',	'Population',	'individuals',	'Frequency',	'Sample',	'Location'), # TRUE to use the first row as column names
                                      col_types = "guess", # guess the types of columns
-                                     na = "NA" )%>%  dplyr::filter((Frequency>=0.01)&(Sample>=50))%>%
+                                     na = "NA" )%>%  dplyr::filter((Frequency>=0.05)&(Sample>=50))%>%
            dplyr::select(-Line,-individuals,-Population, -Location)%>% 
            mutate(Country=NorthAmerica[i],
                   Type=ifelse(substr(Allele,1,1)=='A', 'A',
@@ -326,7 +326,7 @@ for (i in 1:length(Oceania)) {
                                 skip = 2,
                                 col_names = c('Line',	'Allele',	'Population',	'individuals',	'Frequency',	'Sample',	'Location'), # TRUE to use the first row as column names
                                 col_types = "guess", # guess the types of columns
-                                na = "NA" )%>%  dplyr::filter((Frequency>=0.01)&(Sample>=50))%>%
+                                na = "NA" )%>%  dplyr::filter((Frequency>=0.05)&(Sample>=50))%>%
            dplyr::select(-Line,-individuals,-Population, -Location)%>% 
            mutate(Country=Oceania[i],
                   Type=ifelse(substr(Allele,1,1)=='A', 'A',
@@ -370,7 +370,7 @@ for (i in 1:length(SouthAmerica)) {
                                      skip = 2,
                                      col_names = c('Line',	'Allele',	'Population',	'individuals',	'Frequency',	'Sample',	'Location'), # TRUE to use the first row as column names
                                      col_types = "guess", # guess the types of columns
-                                     na = "NA" )%>%  dplyr::filter((Frequency>=0.01)&(Sample>=50))%>%
+                                     na = "NA" )%>%  dplyr::filter((Frequency>=0.05)&(Sample>=50))%>%
            dplyr::select(-Line,-individuals,-Population, -Location)%>% 
            mutate(Country=SouthAmerica[i],
                   Type=ifelse(substr(Allele,1,1)=='A', 'A',
@@ -470,6 +470,6 @@ result_geo <- full_join(Africa_tot , Asia_tot, by=c('HLA_type')) %>%
 
 
 
-write.table(result_total, "C:/Users/afeve/Documents/Tutorials/Geneset/HLA dataset/output3.txt",
+write.table(result_total, "C:/Users/afeve/Documents/Tutorials/Geneset/HLA dataset/output4.txt",
             sep = "\t",
             row.names = F)
