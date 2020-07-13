@@ -5,8 +5,11 @@
 
 # Introduce
 
-* R & python 을 활용한 데이터 분석 예제 와 실습 데이터
+ R & python 을 활용한 데이터 분석 예제 와 실습 데이터
+
 * markdown 문서는 공통되는 것은 RStudio에서 작성되었으며, Python Code의 경우 Jupyter를 활용하였다.
+
+
 ---
 
 ## 0. statistical hypothesis test 
@@ -14,7 +17,7 @@
 
 
 ## 1. Regression Problems
-- 
+
 - 주택 가격
 - TV 가격
 - 태양광 발전량 
