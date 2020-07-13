@@ -5,7 +5,7 @@
 
 # Introduce
 
- R & python 을 활용한 데이터 분석 예제 와 실습 데이터
+- R & python 을 활용한 데이터 분석 예제 와 실습 데이터를 포함한다.
 
 * markdown 문서는 공통되는 것은 RStudio에서 작성되었으며, Python Code의 경우 Jupyter를 활용하였다.
 
