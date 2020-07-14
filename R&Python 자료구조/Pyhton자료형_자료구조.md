@@ -25,7 +25,7 @@ Python은 기본적으로 자료형을 선언할 필요 없이 자동으로 인�
 Python이 가지는 자료형(Data Type)은 크게 숫자, 문자, 논리 등으로 크게 3가지 형태로 구분된다.(물론 이외에도
 날짜를 나타내는 형태와 더 많은 자료형이 있지만 여기서는 기본적인 3가지만을 다루기로 한다.)
 
-\#\#1. 수치형(Numeric Type)
+## 1\. 수치형(Numeric Type)
 
 먼저 수치형은 Numeric이라고 불리며 우리가 흔히 알고 있는 숫자를 나타낸다. 수치형 또 정수 int, 실수 float,
 복소수 complex 등으로 세분화 되는데 이미 중고등과정 내에서 학습된 내용이기 때문에 추가적인 설명은 생략한다.
@@ -46,7 +46,7 @@ print(numeric_1,numeric_2,numeric_3,numeric_4)
 
     ## 1 2.4 2j (2.4+2j)
 
-\#\#2. 문자형(Character Type)
+## 2\. 문자형(Character Type)
 
 문자형은 말그대로 문자를 나타내며 우리가 쓰는 언어부터 모든 특수기호와 숫자등 ’ 혹은 “로 둘러싸인 모든 자료형을 뜻한다.
 여기서 ‘(apostrophe)와 “(quotation mark)의 차이는 존재하지 않는다. 문자형은 모든 자료형을
@@ -66,7 +66,7 @@ print(character_1,character_2,character_3)
 
     ## R 1 &
 
-\#\#3.논리형(Logical Type)
+## 3.논리형(Logical Type)
 
 논리형은 참, 거짓이라는 컴퓨터에 가장 기본이 되는 자료형으로 True, False 두가지 값만을 가진다. 언어별로 대소문자가
 조금씩 다르지만 python에서는 크게 True, False와 같이 앞글자만 대문자로 쓴다.
@@ -82,7 +82,7 @@ print(logical_1,logical_2)
 
     ## True False
 
-\#\#5. Date 자료형
+## 4\. Date 자료형
 
 Date 자료형 날짜 자료형은 날짜를 표현하기 위해서 사용되는 형태로 형식을 지정하여 사용할수 있습니다. 기본적으로 Pyhon에서
 제공하는 날짜 자료형은 존재하지 않지만 날짜 자료형은 데이터분석에 있어 중요한 자료형이기 때문에 이를 사용할수 있는 패키지를 통해
@@ -101,7 +101,7 @@ date_2 = date_0- date_1
 print(date_0,date_1,date_2)
 ```
 
-    ## 2020-07-14 16:07:15.274230 2020-07-13 01:00:00 1 day, 15:07:15.274230
+    ## 2020-07-14 16:08:56.973938 2020-07-13 01:00:00 1 day, 15:08:56.973938
 
 ``` python
 print(date_0.year,date_0.month, date_0.weekday(),date_0.day)
@@ -113,11 +113,11 @@ print(date_0.year,date_0.month, date_0.weekday(),date_0.day)
 print( date_0.hour, date_0.minute, date_0.second, date_0.microsecond)
 ```
 
-    ## 16 7 15 274230
+    ## 16 8 56 973938
 
 ㄴ
 
-\#\#6. NA, NULL 자료형
+\#\#5. NA, NULL 자료형
 
 보통 파이썬에서는 문자열이나 빈 데이터는 별도의 범주형 데이터를 사용하며, 실수형, 정수형, 날짜형 변수에 결측치 처리가
 사용된다. Python은 결측값의 표현 방식을 NaN, None, np.nan의 세 가지 형태로 나타내며 각각의
