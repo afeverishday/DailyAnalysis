@@ -41,10 +41,6 @@ GitHub.
 
 나) R코드 덩어리를 `{r} 으로 시작하고.` 으로 마무리한다
 
-``` r
-dim(iris)
-```
-
     ## [1] 150   5
 
 ## 화면 출력 선택 옵션
@@ -54,13 +50,15 @@ some code
 
 가) 코드를 보여줌
 
-``` r
-dim(iris)
-```
-
 나) 결과를 보여줌
 
     ## [1] 150   5
+
+전체 옵션은 knitr::opts\_chunk$get 함수로 확인할 수 있다.
+
+### table
+
+1.  직접 입력하기
 
 | 선택옵션       | 기본설정                                      | 효과                              |
 | ---------- | ----------------------------------------- | ------------------------------- |
@@ -76,6 +74,30 @@ dim(iris)
 | fig.width  | 7                                         | 덩어리로 생성되는 그래프에 대한 폭을 인치로 지정한다.  |
 | fig.height | 7                                         | 덩어리로 생성되는 그래프에 대한 높이을 인치로 지정한다. |
 
+2.  kable을 활용하기
+
+| Sepal.Length | Sepal.Width | Petal.Length | Petal.Width | Species |
+| -----------: | ----------: | -----------: | ----------: | :------ |
+|          5.1 |         3.5 |          1.4 |         0.2 | setosa  |
+|          4.9 |         3.0 |          1.4 |         0.2 | setosa  |
+|          4.7 |         3.2 |          1.3 |         0.2 | setosa  |
+|          4.6 |         3.1 |          1.5 |         0.2 | setosa  |
+|          5.0 |         3.6 |          1.4 |         0.2 | setosa  |
+
+A caption
+
 ## Plots 내장하기
 
-![](Markdown_index_files/figure-gfm/pressure-1.png)<!-- -->
+<img src="Markdown_index_files/figure-gfm/pressure-1.jpeg" style="display: block; margin: auto;" />
+
+<div class="figure" style="text-align: center">
+
+<img src="https://www.tidyverse.org/images/tidyverse-default.png" alt="tidyverse logo"  />
+
+<p class="caption">
+
+tidyverse logo
+
+</p>
+
+</div>

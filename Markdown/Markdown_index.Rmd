@@ -100,7 +100,7 @@ fig.height | 7 | 덩어리로 생성되는 그래프에 대한 높이을 인치�
 
 2. kable을 활용하기
 ```{r}
-kable(iris[1:5, ], caption = "A caption")
+knitr::kable(iris[1:5, ], caption = "A caption")
 ```
 
 ## Plots 내장하기
