@@ -1,0 +1,177 @@
+---
+title: "R  1.데이터 처리"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+ 기본적으로 모든 프로그래밍 언어가 조금씩 다른 데이터 타입과 구조를 가지고 있으며 이를 처리하는 방식 또한 조금씩 다르다. 여기서는 분석에 필요한 R의 데이터 처리 방법을 정리한다. (데이터 분석이 주로 데이터프레임을 중심으로 이루어지기 때문에) 데이터프레임을 중심으로 이를 살펴본다. R에서 데이터를 다루기 위해서 가장 대표적으로 사용되는 패키지는 dplyr 패키지로 plyr의 진화된 형태입니다.
+
+0. %>%: chain 연산자
+
+chain 연산자는 dplyr 문법을 대표하는 pipe 연산자로 코드를 앞에서 부터 뒤로 선행적으로 이어가도록 도와줍니다. 일반적으로 코드를 짤때에 여러 함수가 중첩되어 있다며 이를 알아보기가 불편한데요. chain 연산자는 이를 %>%(chain)으로 연결해서 순차적으로 코드를 짜고 이해하도록 도와줍니다. 사용법은 간단합니다. 앞으 결과물을 그대로 chain으로 받아와 실행하는 것인데요. 유의할 사항은 함수에 인자값으로 요구되는 데이터 프레임이 chain 앞에 값으로 대체되기 때문에 이를 제외한 인자만 입력하면 된다는 것입니다. chain은 연결을 우한 연산자로 다른 함수를 적용할때 사용되고 단독으로 사용되는것은 아무 의미가 없습니다. 저기 여기서 iris data의 specisies를 가져오려고 하는데요. dplyr을 사용한 것과 그렇지 않은 것을 비교해 보겠습니다.
+
+
+```{r,tidy=TRUE, echo=TRUE }
+library(dplyr)
+library(knitr)
+data(iris)
+
+a<-filter(
+  select(iris, Sepal.Length ,Species),
+          Sepal.Length>=5.0 )
+a
+
+```
+
+위에는 chain 연산자 없이 진행한 코드 이고, 아래는 chain 연산자를 통한 코드입니다. 큰 차이는 없지만 순차적으로 진행되는것을 파악할수 있어 상대적으로 코드를 이해하기 쉽습니다. 때문에 저는 dplyr 문법과 chain 연산자를 선호합니다. 물론, 다른 언어를 사용할때 이 때문에 되레 힘들어지기도 합니다. (하나에만 너무 익숙해지면 안되겠죠) 물론 결과는 동일합니다.
+
+```{r }
+library(dplyr)
+
+data(iris)
+
+b <-iris %>% select(Sepal.Length ,Species) %>% filter(Sepal.Length>=5.0) 
+
+b
+```
+
+
+
+1. select():열(column) 을 선택
+
+다음은 select()함수입니다. 부득이하게 앞에서 chain 연산자를 설명하면서 미리 사용을 했는데요. select는 데이터 프레임 중에서 원하는 열을 선택하거나 제거하는 기능을 가지고 있습니다. 사용법은 열이름이나 열의 순서를 입력하면 해당 열이 선택됩니다. 또 열이름에 -를 넣는 경우 해당 열이 제거 된 데이터 프레임이 결과값으로 나옵니다. 사용하려는 컬럼이 연속하게 있는 경우 :를 이용해서 사용가능하다. 또, 특정 문자로 시작하거나 끝나는 경우는 starts_with와 ends_with를 통해서 사용가능하며, contatins 함수를 이용해 특정 문자를 포함하는 경우도 사용할 수 있다. 이는 정규표현식을 통해서도 사용가능하며 mathes함수를 통해서 사용한다.
+
+```{r }
+library(dplyr)
+
+data(iris)
+
+iris %>% select(Sepal.Length ,Species) 
+
+iris %>% select(-Sepal.Width ,-Petal.Length, -Petal.Width) 
+
+iris %>% select(Sepal.Width:Petal.Width)
+
+iris %>% select( starts_with('Sepal') , ends_with('Width'), contains('Length'))
+
+iris %>% select( matches('Sepal.') ) # 끝말고 Sepal이 오는 열
+
+iris %>% select( matches('.Sepal.') ) # 시작과 끝말고 Sepal이 오는 열
+
+iris %>% select( matches('Sepal') ) # Sepal이 포함된된 열
+
+```
+첫번째 코드의 경우 전체 다섯개의 열 중에서 두개를 선택한 경우이고, 두번째 코드이 경우 전체 다섯개 열 중 세개를 제거해서 동일한 두개의 컬럼이 선택된 것을 확인할수 있습니다.
+
+ 
+2. filter(): 행(row)를 선택
+
+select()함수가 열을 선택하는 함수라면 filter는 행을 선택하는 함수로 특정 조건을 만족하는 레코드를 선택하도록 도와줍니다. 사용법은 특정 조건을 입력해서 그 조건을 만족하는 값만을 포함하는 데이터프레임이 결과값으로 나옵니다. select()함수의 경우 여집을 구하기위해 열에 -를 입력했는데요. filter의 경우 조건이기 때문에 해당 조건이 아니다를 만족하는 !를 사용해서 해당 조건을 만족하지 않는 모든 레코드를 반환하도록 할수 있습니다. ,(콤마)를 기준으로 여러조건을 적으면 and 조건으로 적용되며, or조건을 위해서는 |를 사용한다. 
+
+```{r }
+library(dplyr)
+
+data(iris)
+
+iris %>% filter(Sepal.Width>=5.0) 
+
+iris %>% filter(!(Sepal.Length>=4.0)) 
+
+iris %>% filter(Sepal.Width>=5.0,Sepal.Length>=4.0 )
+
+iris %>% filter(Sepal.Width>=5.0 | Sepal.Length>=4.0 )
+
+```
+
+
+3. arrange(): 행(row)를 정렬
+
+ 데이터프레임을 특정 변수(열)을 기준으로 정렬하여 보고 싶을때 사용하는 함수입니다. 첫인자로 데이터프레임을 두번째 부터는 정렬하고 싶은 기준을 적어주면 됩니다. 기본은 오름차순으로 되어 있으며, 내림차순으로 정렬하고 싶을때는 변수에 desc()를 씌워주면 됩니다.
+
+```{r }
+library(dplyr)
+
+data(iris)
+
+iris %>% arrange(Sepal.Length, Sepal.Width)
+
+iris %>% arrange(Sepal.Length, desc(Sepal.Width))
+
+```
+
+
+4. mutate(): 새로운 열(columne)을 추가
+
+ 새로운 변수(열)을 만들고 싶을때 사용하는 함수로 특정 값을 입력하거나 기존 열의 계산을 통한 새로운 열을 만드는 등의 기능을 수행합니다. 사용법은 간단합니다. mutate()함수 내에 새로 만들려는 변수를 입력해주면 됩니다. mutate는 R base에 존재하는 transform 함수와 동일한 기능을 하지만, mutate내에서 만든 새로운 변수를 다시 사용할수 있다는 장점이 있습니다.
+
+```{r }
+library(dplyr)
+
+data(iris)
+
+iris %>% mutate(Sepal= Sepal.Length + Sepal.Width,
+                Petal= Petal.Length + Petal.Width,)
+
+```
+
+
+5. rename(): 열(coulmn) 이름을 수정
+
+열의 이름을 수정하는 함수로 새로운 변수명= 기존변수명 형태로 사용합니다. 
+
+```{r }
+library(dplyr)
+
+data(iris)
+
+iris %>% rename(Sep_Len= Sepal.Length, 
+                Pet_len=Petal.Length )
+
+```
+
+6. distint(): unique 행(row) 뽑기
+
+R base에 unique함수와 동일한 기능을 하지만 속도가 빠릅니다.(C언어로 만들어져있음.)
+```{r }
+library(dplyr)
+
+data(iris)
+
+iris %>% distinct(Species)
+
+iris %>% distinct(Species, Sepal.Length)
+
+```
+
+
+7. group_by(): 그룹화
+
+ 특정 열을 기준으로 그룹화를 하는 경우에 사용되는 함수 예를 들어 위 iris 데이터의 경우 species 를 기준으로 그룹화 하여 볼 경우에 필요하다. 다만 그룹화는 그 자체로 보다는 집단별로 요약값을 보기 위해서 주로 사용되기 때문에 아래 summarise 함수와 함깨 많이 사용된다.
+
+8. summarise(): 요약 통계량
+ 
+ summarise는 요약 통계량을 구하기 위해서 사용되는 함수로 그 자체로 요약통계량을 뽑아주는 것이 아니라, 직접 사용하려는 요약통계량을 적용하여 diy 가능하다. 요약통계량을 보는 summary() 함수는 데이터의 대표값을 계산해주는 함수로 최소값, 1사분위수, 중앙값, 평균, 3사분위수, 최대값을 보여준다. 반면에 summarise()함수는 지정해서 보여주는게 가능하고, 그룹바이 등과 함께 사용되어 더 강력한 기능을 한다.  이 때 사용 가능한 옵션은 다음과 같다.
+ 
+ min, mean, median, max, IQR, sum,  sd, n(), n_distinct(), nth()
+ 
+ 여러개의 변수에 동일한 옵션을 적용하는 경우 이를 다 적기보다는 summarise_each 함수를 쓰는게 좋다.  사용법은 아래와 같다.
+ 
+```{r }
+library(dplyr)
+
+data(iris)
+
+iris %>% summarise( Sep.len_mean=mean(Sepal.Length))
+
+iris %>% group_by(Species) %>% summarise( Sep.len_mean=mean(Sepal.Length, na.rm = T))
+
+
+iris %>% group_by(Species) %>% summarise( Sep.len_mean=mean(Sepal.Length, na.rm = T))
+
+iris %>% group_by(Species) %>% summarise_each( funs(min, median, max), Sepal.Length, Sepal.Width)
+
+```
+

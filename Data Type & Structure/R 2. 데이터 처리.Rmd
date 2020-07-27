@@ -1,0 +1,25 @@
+---
+title: "R  2.데이터 처리"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+ 앞서 단일 테이블에서의 데이터처리에 대해서 살펴 보았다면, 이번에는 여러 테이블이 있는 경우에 데이터 처리에 대해서 살펴본다. 한 테이블에서 데이터를 다루는 경우에는 그 내부에서만 변형이 이루어지지만 실제 데이터를 다루는 경우에 한 테이블에 모든 데이터가 모여있는 경우는 극히 드물고, 여러 곳에 있는 데이터를 긁어온 후 이를 처리하여 한 테이블로 만든뒤 사용한다. 여기서는 이러한 경우에 사용되는 함수에 대해서 살펴본다. 먼저 행이나 열끼리 합쳐주는 바인딩에 대해서 살펴보고, 다음으로 조인, 다음으로 재 구조화인 spread와  gather를 살펴본다.
+ 
+ 
+ 1. binding 함수
+ 
+ binding 계열의 함수는 말 그대로 묶어주는 것이다. row끼리 묶어주는 경우 row binding, column끼리 묶어주는 경우 column binding 이라고 한다. r base에서는 rbind, cbind 함수를 사용하지만 tidyr 패키지에서는 bind_rows()와 bind_cols()함수를 사용한다. 
+ 
+```{r }
+library(tidyr)
+
+
+
+bind_rows()
+bind_cols()
+```
+
